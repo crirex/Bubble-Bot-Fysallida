@@ -1,3 +1,4 @@
+# --- Discord bubble bot Fysallida --- #
 
 The used sign will be: +
 
