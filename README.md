@@ -1,5 +1,7 @@
 # --- Discord bubble bot Fysallida --- #
 
+Click [here](https://discordapp.com/oauth2/authorize?client_id=534553534914625566&scope=bot) to add me to your server!
+
 The used sign will be: +
 
 ### Comments: ###
