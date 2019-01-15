@@ -23,11 +23,11 @@ If you want to know how to use me just type "+help" and I'll be sure to help.
 
 -> -> definition
 
-\+ -> it's the command you write so that i can know you want to use ME, I mean acces my functions.
+\+ -> it's the command you write so that i can know you want to use ME, I mean access my functions.
 
-[] -> is a field you are required to fill. ( You dont need to put the [] when writing the function ).
+[] -> is a field you are required to fill. ( You don't need to put the [] when writing the function ).
 
-{} -> is a field you are not required to fill. ( You dont need to put the {} when writing the function ).
+{} -> is a field you are not required to fill. ( You don't need to put the {} when writing the function ).
 
 () -> comments
 
@@ -35,7 +35,7 @@ If you want to know how to use me just type "+help" and I'll be sure to help.
 
 +help -> Shows you all my commands...again.
 
-+introduction -> I will itroduce myself :blush:
++introduction -> I will introduce myself :blush:
 
 +bubble {@Name | Name} {Soap | Rubber | Gum | Plastic | Glass} {Trap | Squish | Sit} -> This command will be used so that i could use 
 my powers to create bubbles and use them to play with someone. If you dont pick anything in a field then I will just do random things.
