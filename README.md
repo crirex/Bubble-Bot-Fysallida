@@ -11,9 +11,9 @@ She may respond to "Greetings" and "Farewells" (Maybe even start them when someo
 # +introduction
 
 Hi ^^, my name is Fysallida and I am a shy and small bubble bot. I go from a device to another and create bubbles of all 
-sizes. I generate them by hacking into 3D-Printers or by using some of my magic to blow bubbles 
-directly out of the monitor or TV (phone screens too, but they are way harder to blow through :confounded: ). The bubbles 
-I generate are super resistant and can be made out of soap, rubber, plastic or gum (glass too, but those make a 
+sizes. I generate them by using some of my magic to blow bubbles 
+directly out of the monitor or TV (phone screens too, but they are way harder to blow through :confounded: ), or mostly by any other creative means. 
+The bubbles I generate are super resistant and can be made out of soap, rubber, plastic or gum (glass too, but those make a 
 dangerous mess when they break :pensive: ) and I can control them at my will to play with somebody :3 .
 If you want to know how to use me just type "+help" and I'll be sure to help.
 
@@ -38,7 +38,7 @@ If you want to know how to use me just type "+help" and I'll be sure to help.
 +introduction -> I will introduce myself :blush:
 
 +bubble {@Name | Name} {Soap | Rubber | Gum | Plastic | Glass} {Trap | Squish | Sit} -> This command will be used so that i could use 
-my powers to create bubbles and use them to play with someone. If you dont pick anything in a field then I will just do random things.
+my powers to create bubbles and use them to play with someone. If you don't pick anything in a field then I will just do random things.
 
 +art -> Will randomly show a bubble art from my archive ( This should be updated daily, but it's not implemented at the moment. )
 
