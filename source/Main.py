@@ -320,6 +320,7 @@ async def test():
                      "\n```")
 
 
+# Just initialize stuff
 @client.event
 async def on_ready():
     await client.change_presence(game=Game(name="with bubbles."))
@@ -329,6 +330,7 @@ async def on_ready():
     print('------')
 
 
+# List all the servers from time to time so we could know where the bot is located
 async def list_servers():
     await client.wait_until_ready()
     while not client.is_closed:
@@ -338,6 +340,7 @@ async def list_servers():
         await asyncio.sleep(3600)
 
 
+# We take all the messages and process them to see if we can interact with someone
 @client.event
 async def on_message(message):
     # we do not want the bot to reply to itself
