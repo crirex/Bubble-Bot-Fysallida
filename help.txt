@@ -1,0 +1,9 @@
+Install Python 3.5.6:
+https://www.python.org/ftp/python/3.5.6/Python-3.5.6.tgz
+
+Run pip install from your system terminal/shell/command prompt:
+python -m pip install discord.py==0.16.12
+
+(Optional)Install pycharm to open the .py files
+
+Execute the Main.py file inside the source directory.

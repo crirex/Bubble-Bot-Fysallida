@@ -9,11 +9,47 @@ TOKEN = "NTM0NTUzNTM0OTE0NjI1NTY2.Dx7SMw.lnPefS-6vjOvlRqjFBiiHmpWoH0"
 
 client = Bot(command_prefix=BOT_PREFIX)
 
+
+class TrappedUser:
+    def __init__(self, user_mention, bubble_type, bubble_color):
+        self.user_mention = user_mention
+        self.bubble_type = bubble_type
+        self.bubble_color = bubble_color
+
+
 trappedUsers = []
 
 
+def read_trapped():
+    f = open("../resource/TrappedUsers.bin", "r")
+    all_data = f.read().splitlines()
+    index = 0
+    for data in all_data:
+        if index == 0:
+            user_mention = data
+            index = 1
+        elif index == 1:
+            bubble_type = data
+            index = 2
+        elif index == 2:
+            bubble_color = data
+            trappedUsers.append(TrappedUser(user_mention, bubble_type, bubble_color))
+            index = 0
+
+    f.close()
+
+
+def write_trapped():
+    f = open("../resource/TrappedUsers.bin", "w")
+    for current_user in trappedUsers:
+        f.write(current_user.user_mention + '\n')
+        f.write(current_user.bubble_type + '\n')
+        f.write(current_user.bubble_color + '\n')
+    f.close()
+
+
 class TextFilter:
-    def __init__(self, text, play_type='', bubble_type=''):
+    def __init__(self, text, play_type='#', bubble_type='#'):
         self.text = text
         self.play_type = play_type
         self.bubble_type = bubble_type
@@ -24,7 +60,7 @@ class MultipleTextFilters:
         self.text_possibilities = []
         # read from file
 
-    def get_filtered_possibility(self, play_type='', bubble_type=''):
+    def get_filtered_possibility(self, play_type='#', bubble_type='#'):
 
         all_play_types = [
             "trap",
@@ -32,18 +68,7 @@ class MultipleTextFilters:
             "sit"
         ]
 
-        all_bubble_types = [
-            "soap",
-            "rubber",
-            "gum",
-            "plastic",
-            "glass",
-            "magic"
-        ]
-
         first_filtered_possibilities = []
-        if bubble_type == '':
-            bubble_type = random.choice(all_bubble_types)
 
         for possibility in self.text_possibilities:
             if possibility.bubble_type == bubble_type:
@@ -51,7 +76,7 @@ class MultipleTextFilters:
 
         second_filtered_possibilities = []
 
-        if play_type != '':
+        if play_type != '#':
             for possibility in first_filtered_possibilities:
                 if possibility.play_type == play_type:
                     second_filtered_possibilities.append(possibility)
@@ -69,9 +94,51 @@ class MultipleTextFilters:
         return message
 
 
-class UserName:
-    def __init__(self, user_name):
-        self.user_name = user_name
+def trapped(ctx, user):
+    if type(user) is str:
+        for current_user in trappedUsers:
+            if user == current_user.user_mention:
+                return True
+    return False
+
+
+def get_all_members(ctx):
+    all_users = []
+    for current_user in ctx.message.server.members:
+        if (current_user.status != "offline") & (
+                current_user.status != "busy") & (
+                not current_user.bot) & (
+                not trapped(ctx, current_user.mention)):
+            all_users.append(current_user)
+    return all_users
+
+
+def get_random_bubble_type():
+    all_bubble_types = [
+        "soap",
+        "rubber",
+        "gum",
+        "plastic",
+        "glass",
+        "magic"
+    ]
+    return random.choice(all_bubble_types)
+
+
+def get_random_color():
+    all_colors = [
+        "orange",
+        "blue",
+        "green",
+        "red",
+        "yellow",
+        "white",
+        "pink",
+        "purple",
+        "teal",
+        "black",
+    ]
+    return random.choice(all_colors)
 
 
 @client.command(name='introduction',
@@ -142,32 +209,31 @@ async def hello(ctx):
 @client.command(name='bubble',
                 description="Bubbles someone",
                 brief="I use bubbles to play with someone",
+                aliases=['putInABubble', 'putInBubble'],
                 pass_context=True)
-async def bubble(ctx, user='', bubble_type='', play_type=''):
-    for current_user in trappedUsers:
-        if user == current_user:
-            await client.say("{0} is already trapped in a bubble and cannot be put in another one right now. "
-                             "You should get him out of the bubble first.".format(user))
+async def bubble(ctx, user=None, bubble_type='#', color_type='#', play_type='#'):
+    if user is None:
+        all_users = get_all_members(ctx)
+        if not all_users:
+            await client.say("No eligible member has been found.")
             return
-    all_users = []
-    if user == '':
-        for current_user in ctx.message.server.members:
-            if current_user.status != "offline":
-                all_users.append(current_user)
         user = (random.choice(all_users)).mention
+    else:
+        if trapped(ctx, user):
+            await client.say("{0} is already trapped in a bubble and cannot be put in another one right now. "
+                             "You could get him out of the bubble if you want to.".format(user))
+            return
+        if (user.lower() == "pop") | (user.lower() == "release"):
+            user = bubble_type
+            print(user)
+            await client.say("{0}, you need to use the \"+pop @name\" command".format(ctx.message.author.mention))
+            return
 
-    all_colors = [
-        "orange",
-        "blue",
-        "green",
-        "red",
-        "yellow",
-        "white",
-        "pink",
-        "purple",
-        "teal",
-        "black",
-    ]
+    if color_type == '#':
+        color_type = get_random_color()
+
+    if bubble_type == '#':
+        bubble_type = get_random_bubble_type()
 
     all_text_type = MultipleTextFilters()
 
@@ -210,33 +276,48 @@ async def bubble(ctx, user='', bubble_type='', play_type=''):
                                                        "it launching a {1} rubber bubble at {0} then went above HIS "
                                                        "head and come down smooshing {0} inside.", "trap", "rubber"))
 
-    response: str = all_text_type.get_filtered_possibility(play_type.lower(), bubble_type.lower())
-    trappedUsers.append(user)
-    await client.say(response.format(user, random.choice(all_colors)))
+    color_type = color_type.lower()
+    play_type = play_type.lower()
+    bubble_type = bubble_type.lower()
+
+    response: str = all_text_type.get_filtered_possibility(play_type, bubble_type)
+
+    trappedUsers.append(TrappedUser(user, bubble_type, color_type))
+    write_trapped()
+    await client.say(response.format(user, color_type))
 
 
-@client.command(name='leave',
-                description="Bubbles someone",
-                brief="I use bubbles to play with someone",
-                aliases=['letGo', 'popBubble'],
+@client.command(name='pop',
+                description="Let's someone free.",
+                brief="I get someone out of their bubble zone.",
+                aliases=['letGo', 'popBubble', 'leave', 'lego', 'letgo', 'popbubble', 'release'],
                 pass_context=True)
-async def leave_bubble(ctx, user=''):
-    for current_user in trappedUsers:
-        if user == current_user:
-            trappedUsers.remove(user)
-            await client.say("The bubble in which {0} was just pops "
-                             "and {0} is now free .".format(user))
-            return
+async def leave_bubble(ctx, user=None):
+    if type(user) is str:
+        for current_user in trappedUsers:
+            if user == current_user.user_mention:
+                removed_user = current_user
+                trappedUsers.remove(current_user)
+                write_trapped()
+                await client.say("The {2} {1} bubble in which {0} was just pops "
+                                 "and {0} is now free.".format(removed_user.user_mention, removed_user.bubble_type,
+                                                               removed_user.bubble_color))
+                return
 
-    await client.say("{0} isn't trapped in any kind of bubble. "
-                     "Maybe {0} needs to be in one :3".format(user))
+        await client.say("{0} isn't trapped in any kind of bubble. "
+                         "Maybe {0} needs to be in one :3".format(user))
+    else:
+        await client.say("{0}, you need to specify who to let go.".format(ctx.message.author.mention))
 
 
 @client.command(name='test',
-                pass_context=True)
-async def test(ctx):
-        for user in ctx.message.server.members:
-            print(str(user))
+                description="test",
+                brief="Won't exist in final version",
+                aliases=['t'])
+async def test():
+    await client.say("```\n"
+                     + "uhh" +
+                     "\n```")
 
 
 @client.event
@@ -257,5 +338,13 @@ async def list_servers():
         await asyncio.sleep(3600)
 
 
+@client.event
+async def on_message(message):
+    # we do not want the bot to reply to itself
+    if message.author == client.user:
+        return
+
+
+read_trapped()
 client.loop.create_task(list_servers())
 client.run(TOKEN)
