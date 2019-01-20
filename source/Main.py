@@ -21,7 +21,7 @@ trappedUsers = []
 
 
 def read_trapped():
-    f = open("../resource/TrappedUsers.bin", "r")
+    f = open("/home/crirex/bot/Fyssalida/resource/TrappedUsers.txt", "r")
     all_data = f.read().splitlines()
     index = 0
     for data in all_data:
@@ -35,12 +35,11 @@ def read_trapped():
             bubble_color = data
             trappedUsers.append(TrappedUser(user_mention, bubble_type, bubble_color))
             index = 0
-
     f.close()
 
 
 def write_trapped():
-    f = open("../resource/TrappedUsers.bin", "w")
+    f = open("/home/crirex/bot/Fyssalida/resource/TrappedUsers.txt", "w")
     for current_user in trappedUsers:
         f.write(current_user.user_mention + '\n')
         f.write(current_user.bubble_type + '\n')
@@ -318,6 +317,7 @@ async def test():
     await client.say("```\n"
                      + "uhh" +
                      "\n```")
+    print("test print")
 
 
 # Just initialize stuff
@@ -330,6 +330,15 @@ async def on_ready():
     print('------')
 
 
+@client.command(name='close')
+async def close():
+    await client.say("```\n"
+                     + "uhh" +
+                     "\n```")
+    print("close print")
+    client.close()
+
+
 # List all the servers from time to time so we could know where the bot is located
 async def list_servers():
     await client.wait_until_ready()
@@ -339,13 +348,12 @@ async def list_servers():
             print(server.name)
         await asyncio.sleep(3600)
 
-
 # We take all the messages and process them to see if we can interact with someone
-@client.event
-async def on_message(message):
+# @client.event
+# async def on_message(message):
     # we do not want the bot to reply to itself
-    if message.author == client.user:
-        return
+    # if message.author == client.user:
+        # return
 
 
 read_trapped()
