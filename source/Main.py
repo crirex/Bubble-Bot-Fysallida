@@ -1,11 +1,15 @@
 # Work with Python 3.6
 import json
 import random
+import aiml
+import os
 import asyncio
 from discord import Game, Message
 from discord.ext.commands import Bot
 
 client = Bot(command_prefix="+")
+
+kernel = aiml.Kernel()
 
 trapped_users = json.load(open("TrappedUsers.json", "r"))
 
@@ -333,6 +337,9 @@ async def on_message(message: Message):
     if message.content.startswith(client.command_prefix):
         await client.process_commands(message)
         return
+    session_id = 1  # Should use a map for every member to have a separate id
+    bot_response = kernel.respond(message.content, session_id)
+    await client.send_message(message.channel, bot_response)
 
 
 # Test
@@ -346,6 +353,13 @@ async def test():
                      "\n```")
 
 if __name__ == "__main__":
+
+    if os.path.isfile("bot_brain.brn"):
+        kernel.bootstrap(brainFile="bot_brain.brn")
+    else:
+        kernel.bootstrap(learnFiles="std-startup.xml", commands="load aiml b")
+        kernel.saveBrain("bot_brain.brn")
+
     my_token = json.load(open("config.json", "r"))
     client.loop.create_task(list_servers())
     client.run(my_token["token"])
