@@ -1,5 +1,5 @@
 # Work with Python 3.6
-import os
+import json
 import random
 import asyncio
 from discord import Game, Message
@@ -10,48 +10,7 @@ TOKEN = "NTM0NTUzNTM0OTE0NjI1NTY2.Dx7SMw.lnPefS-6vjOvlRqjFBiiHmpWoH0"
 
 client = Bot(command_prefix=BOT_PREFIX)
 
-
-class TrappedUser:
-    def __init__(self, user_mention, bubble_type, bubble_color):
-        self.user_mention = user_mention
-        self.bubble_type = bubble_type
-        self.bubble_color = bubble_color
-
-
-trappedUsers = []
-
-
-def read_trapped():
-    if os.name == 'nt':
-        f = open("../resource/TrappedUsers.txt", "r")
-    else:
-        f = open("/home/crirex/bot/Fyssalida/resource/TrappedUsers.txt", "r")
-    all_data = f.read().splitlines()
-    index = 0
-    for data in all_data:
-        if index == 0:
-            user_mention = data
-            index = 1
-        elif index == 1:
-            bubble_type = data
-            index = 2
-        elif index == 2:
-            bubble_color = data
-            trappedUsers.append(TrappedUser(user_mention, bubble_type, bubble_color))
-            index = 0
-    f.close()
-
-
-def write_trapped():
-    if os.name == 'nt':
-        f = open("../resource/TrappedUsers.txt", "w")
-    else:
-        f = open("/home/crirex/bot/Fyssalida/resource/TrappedUsers.txt", "w")
-    for current_user in trappedUsers:
-        f.write(current_user.user_mention + '\n')
-        f.write(current_user.bubble_type + '\n')
-        f.write(current_user.bubble_color + '\n')
-    f.close()
+trapped_users = json.load(open("TrappedUsers.json", "r"))
 
 
 class TextFilter:
@@ -67,12 +26,6 @@ class MultipleTextFilters:
         # read from file
 
     def get_filtered_possibility(self, play_type='#', bubble_type='#'):
-
-        all_play_types = [
-            "trap",
-            "squish",
-            "sit"
-        ]
 
         first_filtered_possibilities = []
 
@@ -100,10 +53,10 @@ class MultipleTextFilters:
         return message
 
 
-def trapped(ctx, user):
+def trapped(user):
     if type(user) is str:
-        for current_user in trappedUsers:
-            if user == current_user.user_mention:
+        for current_user in trapped_users:
+            if user == current_user["user_mention"]:
                 return True
     return False
 
@@ -114,7 +67,7 @@ def get_all_members(ctx):
         if (current_user.status != "offline") & (
                 current_user.status != "busy") & (
                 not current_user.bot) & (
-                not trapped(ctx, current_user.mention)):
+                not trapped(current_user.mention)):
             all_users.append(current_user)
     return all_users
 
@@ -153,7 +106,6 @@ def get_random_color():
                 brief="I give you a big text with my character details.",
                 pass_context=True)
 async def introduction(ctx):
-    print(str(ctx.message.server.members))
     introduction_message = "Hi ^^, my name is Fysallida and I am a shy and small bubble bot. " \
                            "I go from a device to another and create bubbles of all sizes. " \
                            "I generate them by hacking into 3D-Printers or by using some of my magic " \
@@ -229,7 +181,7 @@ async def bubble(ctx, user=None, bubble_type='#', color_type='#', play_type='#')
             return
         user = (random.choice(all_users)).mention
     else:
-        if trapped(ctx, user):
+        if trapped(user):
             await client.say("{0} is already trapped in a bubble and cannot be put in another one right now. "
                              "You could get him out of the bubble if you want to.".format(user))
             return
@@ -292,8 +244,12 @@ async def bubble(ctx, user=None, bubble_type='#', color_type='#', play_type='#')
 
     response: str = all_text_type.get_filtered_possibility(play_type, bubble_type)
 
-    trappedUsers.append(TrappedUser(user, bubble_type, color_type))
-    write_trapped()
+    trapped_users.append({
+        "user_mention": user,
+        "bubble_type": bubble_type,
+        "bubble_color": color_type
+    })
+    json.dump(trapped_users, open("TrappedUsers.json", "w"))
     await client.say(response.format(user, color_type))
 
 
@@ -305,14 +261,15 @@ async def bubble(ctx, user=None, bubble_type='#', color_type='#', play_type='#')
                 pass_context=True)
 async def leave_bubble(ctx, user=None):
     if type(user) is str:
-        for current_user in trappedUsers:
-            if user == current_user.user_mention:
+        for current_user in trapped_users:
+            if user == current_user["user_mention"]:
                 removed_user = current_user
-                trappedUsers.remove(current_user)
-                write_trapped()
+                trapped_users.remove(current_user)
+                json.dump(trapped_users, open("TrappedUsers.json", "w"))
                 await client.say("The {2} {1} bubble in which {0} was just pops "
-                                 "and {0} is now free.".format(removed_user.user_mention, removed_user.bubble_type,
-                                                               removed_user.bubble_color))
+                                 "and {0} is now free.".format(removed_user["user_mention"],
+                                                               removed_user["bubble_type"],
+                                                               removed_user["bubble_color"]))
                 return
 
         await client.say("{0} isn't trapped in any kind of bubble. "
@@ -344,7 +301,7 @@ async def logout(ctx):
 # Joins the voice channel of the person that used the command
 @client.command(name='join',
                 pass_context=True)
-async def join(ctx):
+async def join_voice(ctx):
     channel = ctx.message.author.voice.voice_channel
     await client.join_voice_channel(channel)
     print("Joined voice channel")
@@ -353,7 +310,7 @@ async def join(ctx):
 # Leaves the voice channel
 @client.command(name='leave',
                 pass_context=True)
-async def leave(ctx):
+async def leave_voice(ctx):
     server = ctx.message.server
     voice_client = client.voice_client_in(server)
     await voice_client.disconnect()
@@ -391,7 +348,6 @@ async def test():
                      + "uhh" +
                      "\n```")
 
-
-read_trapped()
-client.loop.create_task(list_servers())
-client.run(TOKEN)
+if __name__ == "__main__":
+    client.loop.create_task(list_servers())
+    client.run(TOKEN)
