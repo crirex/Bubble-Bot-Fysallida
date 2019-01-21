@@ -5,10 +5,7 @@ import asyncio
 from discord import Game, Message
 from discord.ext.commands import Bot
 
-BOT_PREFIX = "+"
-TOKEN = "NTM0NTUzNTM0OTE0NjI1NTY2.Dx7SMw.lnPefS-6vjOvlRqjFBiiHmpWoH0"
-
-client = Bot(command_prefix=BOT_PREFIX)
+client = Bot(command_prefix="+")
 
 trapped_users = json.load(open("TrappedUsers.json", "r"))
 
@@ -349,5 +346,6 @@ async def test():
                      "\n```")
 
 if __name__ == "__main__":
+    my_token = json.load(open("config.json", "r"))
     client.loop.create_task(list_servers())
-    client.run(TOKEN)
+    client.run(my_token["token"])
