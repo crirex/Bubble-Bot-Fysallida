@@ -1,7 +1,8 @@
 # Work with Python 3.6
+import os
 import random
 import asyncio
-from discord import Game
+from discord import Game, Message
 from discord.ext.commands import Bot
 
 BOT_PREFIX = "+"
@@ -21,7 +22,10 @@ trappedUsers = []
 
 
 def read_trapped():
-    f = open("/home/crirex/bot/Fyssalida/resource/TrappedUsers.txt", "r")
+    if os.name == 'nt':
+        f = open("../resource/TrappedUsers.txt", "r")
+    else:
+        f = open("/home/crirex/bot/Fyssalida/resource/TrappedUsers.txt", "r")
     all_data = f.read().splitlines()
     index = 0
     for data in all_data:
@@ -39,7 +43,10 @@ def read_trapped():
 
 
 def write_trapped():
-    f = open("/home/crirex/bot/Fyssalida/resource/TrappedUsers.txt", "w")
+    if os.name == 'nt':
+        f = open("../resource/TrappedUsers.txt", "w")
+    else:
+        f = open("/home/crirex/bot/Fyssalida/resource/TrappedUsers.txt", "w")
     for current_user in trappedUsers:
         f.write(current_user.user_mention + '\n')
         f.write(current_user.bubble_type + '\n')
@@ -140,6 +147,7 @@ def get_random_color():
     return random.choice(all_colors)
 
 
+# The command for introduction
 @client.command(name='introduction',
                 description="I introduce myself.",
                 brief="I give you a big text with my character details.",
@@ -158,6 +166,7 @@ async def introduction(ctx):
     await client.send_message(ctx.message.author, introduction_message)
 
 
+# My help beside the normal help
 @client.command(name='myHelp',
                 description="I give you my commands.",
                 brief="I give a legend and tell you how to use me.",
@@ -190,6 +199,7 @@ async def help_output(ctx):
     await client.send_message(ctx.message.author, help_message)
 
 
+# Hello command
 @client.command(name='hello',
                 description="Greets you back.",
                 brief="Greets you back with some random phrase.",
@@ -205,6 +215,7 @@ async def hello(ctx):
     await client.say(random.choice(possible_responses) + " " + ctx.message.author.mention)
 
 
+# Puts someone in a bubble
 @client.command(name='bubble',
                 description="Bubbles someone",
                 brief="I use bubbles to play with someone",
@@ -286,10 +297,11 @@ async def bubble(ctx, user=None, bubble_type='#', color_type='#', play_type='#')
     await client.say(response.format(user, color_type))
 
 
+# Free someone from a bubble
 @client.command(name='pop',
                 description="Let's someone free.",
                 brief="I get someone out of their bubble zone.",
-                aliases=['letGo', 'popBubble', 'leave', 'lego', 'letgo', 'popbubble', 'release'],
+                aliases=['letGo', 'popBubble', 'lego', 'letgo', 'popbubble', 'release'],
                 pass_context=True)
 async def leave_bubble(ctx, user=None):
     if type(user) is str:
@@ -309,17 +321,6 @@ async def leave_bubble(ctx, user=None):
         await client.say("{0}, you need to specify who to let go.".format(ctx.message.author.mention))
 
 
-@client.command(name='test',
-                description="test",
-                brief="Won't exist in final version",
-                aliases=['t'])
-async def test():
-    await client.say("```\n"
-                     + "uhh" +
-                     "\n```")
-    print("test print")
-
-
 # Just initialize stuff
 @client.event
 async def on_ready():
@@ -330,13 +331,33 @@ async def on_ready():
     print('------')
 
 
-@client.command(name='close')
-async def close():
-    await client.say("```\n"
-                     + "uhh" +
-                     "\n```")
-    print("close print")
-    client.close()
+# Closes the bot. Can only be used by me.
+@client.command(name='logout',
+                pass_context=True)
+async def logout(ctx):
+    if ctx.message.author.mention == "<@142593360992010240>":
+        if client.is_logged_in:
+            await client.logout()
+            print("Logged out")
+
+
+# Joins the voice channel of the person that used the command
+@client.command(name='join',
+                pass_context=True)
+async def join(ctx):
+    channel = ctx.message.author.voice.voice_channel
+    await client.join_voice_channel(channel)
+    print("Joined voice channel")
+
+
+# Leaves the voice channel
+@client.command(name='leave',
+                pass_context=True)
+async def leave(ctx):
+    server = ctx.message.server
+    voice_client = client.voice_client_in(server)
+    await voice_client.disconnect()
+    print("Left voice channel")
 
 
 # List all the servers from time to time so we could know where the bot is located
@@ -348,12 +369,27 @@ async def list_servers():
             print(server.name)
         await asyncio.sleep(3600)
 
-# We take all the messages and process them to see if we can interact with someone
-# @client.event
-# async def on_message(message):
+
+# Verify each message to see if it has something to do with the bot, then responds to them
+@client.event
+async def on_message(message: Message):
     # we do not want the bot to reply to itself
-    # if message.author == client.user:
-        # return
+    if message.author == client.user:
+        return
+    if message.content.startswith(client.command_prefix):
+        await client.process_commands(message)
+        return
+
+
+# Test
+@client.command(name='test',
+                description="test",
+                brief="Won't exist in final version",
+                aliases=['t'])
+async def test():
+    await client.say("```\n"
+                     + "uhh" +
+                     "\n```")
 
 
 read_trapped()
