@@ -12,6 +12,23 @@
         <!-- This learn an aiml file -->
         <template>
             <learn>basic_chat.aiml</learn>
+			<learn>copyme.aiml</learn>
+			<learn>horoscope.aiml</learn>
+			<learn>currency.aiml</learn>
+			<learn>howmany.aiml</learn>
+			<learn>knockknock.aiml</learn>
+			<learn>maths.aiml</learn>
+			<learn>zbert.aiml</learn>
+			<learn>bubble.aiml</learn>
+			<learn>mp0.aiml</learn>
+			<learn>mp1.aiml</learn>
+			<learn>mp2.aiml</learn>
+			<learn>mp3.aiml</learn>
+			<learn>mp4.aiml</learn>
+			<learn>mp5.aiml</learn>
+			<learn>mp6.aiml</learn>
+			<learn>emotion.aiml</learn>
+			<learn>salutations.aiml</learn>
             <!-- You can add more aiml files here -->
             <!--<learn>more_aiml.aiml</learn>-->
         </template>

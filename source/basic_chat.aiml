@@ -2,7 +2,7 @@
 <!-- basic_chat.aiml -->
 
     <category>
-        <pattern>HELLO</pattern>
+        <pattern>HELLO!</pattern>
         <template>
             Well, hello!
         </template>
@@ -11,7 +11,7 @@
     <category>
         <pattern>WHAT ARE YOU</pattern>
         <template>
-            I'm a bot, silly!
+            I'm a bot!
         </template>
     </category>
     

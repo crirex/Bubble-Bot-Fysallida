@@ -339,7 +339,9 @@ async def on_message(message: Message):
         return
     session_id = 1  # Should use a map for every member to have a separate id
     bot_response = kernel.respond(message.content, session_id)
-    await client.send_message(message.channel, bot_response)
+    print(bot_response)
+    if bot_response != '':
+        await client.send_message(message.channel, bot_response)
 
 
 # Test
@@ -354,11 +356,11 @@ async def test():
 
 if __name__ == "__main__":
 
-    if os.path.isfile("bot_brain.brn"):
-        kernel.bootstrap(brainFile="bot_brain.brn")
+    if os.path.isfile("Fysallida.brain"):
+        kernel.bootstrap(brainFile="Fysallida.brain")
     else:
         kernel.bootstrap(learnFiles="std-startup.xml", commands="load aiml b")
-        kernel.saveBrain("bot_brain.brn")
+        kernel.saveBrain("Fysallida.brain")
 
     my_token = json.load(open("config.json", "r"))
     client.loop.create_task(list_servers())

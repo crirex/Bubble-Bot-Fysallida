@@ -1,0 +1,12 @@
+<aiml version="1.0.1" encoding="UTF-8">
+<!-- basic_chat.aiml -->
+<!-- i need to know the id in the .py file for every mention of the members so that i can retain some informations for a certain index -->
+<!-- everything will need to be accessed from other id sessions as well, but i don't know how to do that yet or even if it's possible -->
+    <category>
+        <pattern></pattern>
+        <template>
+        </template>
+    </category>
+
+	
+</aiml>
