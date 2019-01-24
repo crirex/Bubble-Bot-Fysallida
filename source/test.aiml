@@ -1,0 +1,27 @@
+<aiml version="1.0.1" encoding="UTF-8">
+<!-- basic_chat.aiml -->
+<!-- i can make the bot to return a keyword that will tell whitch  -->
+<!--user to trap and then give that to the bot and procces it for the specified user id -->
+
+    <category>
+        <pattern>TEST</pattern>
+        <template>
+            Message: <bot name = "fullname"/>
+        </template>
+    </category>
+	
+	<category>
+        <pattern>SET *</pattern>
+        <template>
+            Message: <set name = "fullname"><star/></set>
+        </template>
+    </category>
+	
+	<category>
+        <pattern>GET</pattern>
+        <template>
+            Message: <get name = "fullname"/>
+        </template>
+    </category>
+	
+</aiml>

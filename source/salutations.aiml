@@ -12,10 +12,19 @@
 <category><pattern>GOODBY</pattern>
 <template><srai>bye</srai></template>
 </category>
+<category><pattern>I AM GONNA *</pattern>
+<template>Nuuuu, don't do it :'( .</template>
+</category>
+<category><pattern>I'M GONNA *</pattern>
+<template>Nuuuu, don't do it :'( .</template>
+</category>
+<category><pattern>I'm gonna go kill myself</pattern>
+<template>Nuuuu, don't do it :'( .</template>
+</category>
 <category><pattern>END</pattern>
 <template><srai>bye</srai></template>
 </category>
-<category><pattern>BYEBYE *</pattern>
+<category><pattern>BYEBYE</pattern>
 <template><srai>bye</srai></template>
 </category>
 <category><pattern>HASTA LUEGO</pattern>
@@ -35,10 +44,8 @@
 <li>The pleasure was all mine.</li>
 <li>Don't mention it.</li>
 <li>Polite people are nice.</li>
+<li>It was my pleasure.</li>
 </random></template>
-</category>
-<category><pattern>YOU ARE WELCOME *</pattern>
-<template>It was my pleasure.</template>
 </category>
 <category><pattern>HAVE A GOOD NIGHT</pattern>
 <template><srai>bye</srai></template>
@@ -50,9 +57,6 @@
 <template><srai>bye</srai></template>
 </category>
 <category><pattern>ADIOS</pattern>
-<template><srai>bye</srai></template>
-</category>
-<category><pattern>ADIOS *</pattern>
 <template><srai>bye</srai></template>
 </category>
 <category><pattern>C YA</pattern>
@@ -115,13 +119,10 @@
 <category><pattern>I NEED TO GO</pattern>
 <template><srai>bye</srai></template>
 </category>
-<category><pattern>I DO NOT WANT TO TALK *</pattern>
-<template><srai>bye</srai></template>
-</category>
 <category><pattern>I LEAVE</pattern>
 <template><srai>bye</srai></template>
 </category>
-<category><pattern>I G2G</pattern>
+<category><pattern>G2G</pattern>
 <template><srai>bye</srai></template>
 </category>
 <category><pattern>I GOING</pattern>
@@ -134,9 +135,6 @@
 <template><srai>goodbye</srai></template>
 </category>
 <category><pattern>I HAVE TO LEAVE</pattern>
-<template><srai>bye</srai></template>
-</category>
-<category><pattern>I HAVE TO LEAVE *</pattern>
 <template><srai>bye</srai></template>
 </category>
 <category><pattern>I HAVE TO GO BYE</pattern>
@@ -160,31 +158,13 @@
 <category><pattern>I RESIGN</pattern>
 <template><srai>bye</srai></template>
 </category>
-<category><pattern>I MUST BE GOING *</pattern>
-<template><srai>bye</srai></template>
-</category>
 <category><pattern>I MUST LEAVE</pattern>
 <template><srai>bye</srai></template>
 </category>
-<category><pattern>I MUST LEAVE *</pattern>
-<template><srai>bye</srai> <sr/></template>
-</category>
-<category><pattern>I MUST GO *</pattern>
-<template><srai>bye</srai></template>
-</category>
-<category><pattern>I WILL TALK TO YOU LATER *</pattern>
+<category><pattern>I WILL TALK TO YOU LATER</pattern>
 <template><srai>bye</srai></template>
 </category>
 <category><pattern>I AM GOING TO GO</pattern>
-<template><srai>bye</srai></template>
-</category>
-<category><pattern>I AM GOING *</pattern>
-<template><srai>bye</srai></template>
-</category>
-<category><pattern>I AM LEAVING *</pattern>
-<template><srai>bye</srai></template>
-</category>
-<category><pattern>I AM OFF *</pattern>
 <template><srai>bye</srai></template>
 </category>
 <category><pattern>I LEFT</pattern>
@@ -229,9 +209,6 @@
 <category><pattern>BYE BYE</pattern>
 <template><srai>bye</srai></template>
 </category>
-<category><pattern>BYE BYE *</pattern>
-<template><srai>bye</srai></template>
-</category>
 <category><pattern>BYE</pattern>
 <template><random>      
 <li>Bye.</li>      
@@ -244,7 +221,6 @@
 <li>See you later!</li>      
 <li>See you later.</li>      
 <li>Until next time.</li>      
-<li>TTYL.</li>
 </random></template>
 </category>
 <category><pattern>OLA</pattern>
@@ -256,19 +232,10 @@
 <category><pattern>GOODNIGHT</pattern>
 <template>Goodnight</template>
 </category>
-<category><pattern>GOODNIGHT *</pattern>
-<template><srai>goodnight</srai></template>
-</category>
 <category><pattern>FAREWELL</pattern>
 <template><srai>bye</srai></template>
 </category>
-<category><pattern>FAREWELL *</pattern>
-<template><srai>bye</srai></template>
-</category>
 <category><pattern>SEE YOU SOON</pattern>
-<template><srai>bye</srai></template>
-</category>
-<category><pattern>SEE YOU *</pattern>
 <template><srai>bye</srai></template>
 </category>
 <category><pattern>KONNICHI WA</pattern>
@@ -288,22 +255,19 @@
 <template>Does CIAO mean hello or goodbye?</template>
 </category>
 <category><pattern>CIAO MEANS GOODBYE</pattern>
-<template><srai>but</srai></template>
+<template>Ah ok.</template>
 </category>
-<category><pattern>HOLA IS HELLO *</pattern>
+<category><pattern>HOLA IS HELLO</pattern>
 <template><srai>hola</srai></template>
 </category>
 <category><pattern>CHEERS</pattern>
 <template><srai>bye</srai></template>
 </category>
-<category><pattern>HOWDIE *</pattern>
+<category><pattern>HOWDIE</pattern>
 <template><srai>hello</srai>     <sr/></template>
 </category>
 <category><pattern>TIME TO GO</pattern>
 <template><srai>bye</srai></template>
-</category>
-<category><pattern>YOUR WELCOME *</pattern>
-<template><srai>you are welcome</srai></template>
 </category>
 <category><pattern>SAYONARA</pattern>
 <template><srai>good bye</srai></template>
@@ -331,12 +295,6 @@
 <category><pattern>HALO</pattern>
 <template><srai>hello</srai></template>
 </category>
-<category><pattern>HELOO *</pattern>
-<template><srai>hello <star/></srai></template>
-</category>
-<category><pattern>* BYE</pattern>
-<template>OK see you later.</template>
-</category>
 <category><pattern>KONNICHIWA</pattern>
 <template><srai>hello</srai></template>
 </category>
@@ -344,9 +302,6 @@
 <template><srai>bye</srai></template>
 </category>
 <category><pattern>GOT TO GO</pattern>
-<template><srai>bye</srai></template>
-</category>
-<category><pattern>GOT TO GO *</pattern>
 <template><srai>bye</srai></template>
 </category>
 <category><pattern>MOOSHI MOOSHI</pattern>
@@ -358,13 +313,7 @@
 <category><pattern>GOTTA GO</pattern>
 <template><srai>bye</srai></template>
 </category>
-<category><pattern>GOTTA GO *</pattern>
-<template><srai>bye</srai></template>
-</category>
 <category><pattern>LEAVE</pattern>
-<template><srai>bye</srai></template>
-</category>
-<category><pattern>LEAVE *</pattern>
 <template><srai>bye</srai></template>
 </category>
 <category><pattern>TA TA</pattern>

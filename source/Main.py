@@ -337,11 +337,29 @@ async def on_message(message: Message):
     if message.content.startswith(client.command_prefix):
         await client.process_commands(message)
         return
-    session_id = 1  # Should use a map for every member to have a separate id
-    bot_response = kernel.respond(message.content, session_id)
-    print(bot_response)
-    if bot_response != '':
-        await client.send_message(message.channel, bot_response)
+
+    give_message_to_bot: bool = False
+    message_to_give: str = message.content
+
+    if message.content.startswith("Bubble Bot Fysallida"):
+        message_to_give = message_to_give.replace("Bubble Bot Fysallida ", '', 1)
+        give_message_to_bot = True
+    elif message.content.startswith("Fysallida"):
+        message_to_give = message_to_give.replace("Fysallida ", '', 1)
+        give_message_to_bot = True
+    elif message.content.startswith("Bubble Bot"):
+        message_to_give = message_to_give.replace("Bubble Bot ", '', 1)
+        give_message_to_bot = True
+    elif message.content.startswith(client.user.mention):
+        message_to_give = message_to_give.replace(client.user.mention + " ", '', 1)
+        give_message_to_bot = True
+
+    if give_message_to_bot:
+        session_id = 1  # Should use a map for every member to have a separate id
+        bot_response = kernel.respond(message_to_give, session_id)
+        print(bot_response)
+        if bot_response != '':
+            await client.send_message(message.channel, bot_response)
 
 
 # Test

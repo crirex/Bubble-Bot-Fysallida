@@ -29,6 +29,7 @@
 			<learn>mp6.aiml</learn>
 			<learn>emotion.aiml</learn>
 			<learn>salutations.aiml</learn>
+			<learn>test.aiml</learn>
             <!-- You can add more aiml files here -->
             <!--<learn>more_aiml.aiml</learn>-->
         </template>
