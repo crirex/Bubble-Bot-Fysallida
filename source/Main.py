@@ -12,6 +12,7 @@ client = Bot(command_prefix="+")
 kernel = aiml.Kernel()
 
 trapped_users = json.load(open("TrappedUsers.json", "r"))
+trapping_text = json.load(open("TrappingText.json", "r"))
 
 
 class TextFilter:
@@ -21,37 +22,34 @@ class TextFilter:
         self.bubble_type = bubble_type
 
 
-class MultipleTextFilters:
-    def __init__(self):
-        self.text_possibilities = []
-        # read from file
+def get_filtered_possibility(play_type='#', bubble_type='#'):
 
-    def get_filtered_possibility(self, play_type='#', bubble_type='#'):
+    first_filtered_possibilities = []
 
-        first_filtered_possibilities = []
+    print(bubble_type)
+    for possibility in trapping_text:
+        print(possibility["bubble_type"])
+        if possibility["bubble_type"] == bubble_type:
+            first_filtered_possibilities.append(possibility)
 
-        for possibility in self.text_possibilities:
-            if possibility.bubble_type == bubble_type:
-                first_filtered_possibilities.append(possibility)
+    second_filtered_possibilities = []
 
-        second_filtered_possibilities = []
+    if play_type != '#':
+        for possibility in first_filtered_possibilities:
+            if possibility["play_type"] == play_type:
+                second_filtered_possibilities.append(possibility)
+    else:
+        second_filtered_possibilities = first_filtered_possibilities
 
-        if play_type != '#':
-            for possibility in first_filtered_possibilities:
-                if possibility.play_type == play_type:
-                    second_filtered_possibilities.append(possibility)
-        else:
-            second_filtered_possibilities = first_filtered_possibilities
+    if not second_filtered_possibilities:
+        second_filtered_possibilities = trapping_text
 
-        if not second_filtered_possibilities:
-            second_filtered_possibilities = self.text_possibilities
+    if second_filtered_possibilities:
+        message = (random.choice(second_filtered_possibilities))["text"]
+    else:
+        message = "It seems like i couldn't find anything to do."
 
-        if second_filtered_possibilities:
-            message = (random.choice(second_filtered_possibilities)).text
-        else:
-            message = "It seems like i couldn't find anything to do."
-
-        return message
+    return message
 
 
 def trapped(user):
@@ -198,52 +196,11 @@ async def bubble(ctx, user=None, bubble_type='#', color_type='#', play_type='#')
     if bubble_type == '#':
         bubble_type = get_random_bubble_type()
 
-    all_text_type = MultipleTextFilters()
-
-    all_text_type.text_possibilities.append(TextFilter("I create a {1} rubber bubble throwing it towards "
-                                                       "{0} as it surrounds {0} in it’s rubbery walls "
-                                                       "squeezing them tight then {0} plopped inside trapped "
-                                                       "in my bubble", "trap", "rubber"))
-
-    all_text_type.text_possibilities.append(TextFilter("I blow a {1} soap bubble and put {0} in it, as {0} "
-                                                       "floats a few inches in the air.", "trap", "soap"))
-
-    all_text_type.text_possibilities.append(TextFilter("I began to form a {1} rubber sphere bouncing it towards {0} "
-                                                       "then jumping on top of the rubber bubble and squeezed {0} "
-                                                       "underneath leaving {0} helpless until {0} sank inside "
-                                                       "and got trapped", "trap", "rubber"))
-
-    all_text_type.text_possibilities.append(TextFilter("The ground shakes a bit underneath {0} as two {1} half "
-                                                       "spheres pop out from both sides of {0} and clamp "
-                                                       "together locking {0} inside a {1} glass Ball", "trap", "glass"))
-
-    all_text_type.text_possibilities.append(TextFilter("There is a lot of multicolor lights and a rainbow bubble is "
-                                                       "formed, wobbling towards {0}, absorbing {0} inside the bubble "
-                                                       ", with no way of using any "
-                                                       "sort of magic to escape.", "trap", "magic"))
-
-    all_text_type.text_possibilities.append(TextFilter("I make a small {1} plastic bubble. It inflates right in front "
-                                                       "of {0} as {0} can't move out of the way. {0}'s eyes are "
-                                                       "closed while {0} can feel the pressure of the bubble "
-                                                       "intensifying, then {0} feels like passing through something. "
-                                                       "{0} opens his eyes only to see that {0} is now inside the"
-                                                       " bubble that now has the same size "
-                                                       "as {0} is.", "trap", "plastic"))
-
-    all_text_type.text_possibilities.append(TextFilter("I blow a {1} plastic bubble directly out of {0}'s screen and "
-                                                       "it gets big so fast that {0} couldn't react and gets "
-                                                       "trapped inside the bubble.", "trap", "plastic"))
-
-    all_text_type.text_possibilities.append(TextFilter("I pulled out a bazooka and aimed it at {0} pressing the "
-                                                       "trigger then a loud BOOOING sound came from the end of "
-                                                       "it launching a {1} rubber bubble at {0} then went above HIS "
-                                                       "head and come down smooshing {0} inside.", "trap", "rubber"))
-
     color_type = color_type.lower()
     play_type = play_type.lower()
     bubble_type = bubble_type.lower()
 
-    response: str = all_text_type.get_filtered_possibility(play_type, bubble_type)
+    response: str = get_filtered_possibility(play_type, bubble_type)
 
     trapped_users.append({
         "user_mention": user,
@@ -251,6 +208,7 @@ async def bubble(ctx, user=None, bubble_type='#', color_type='#', play_type='#')
         "bubble_color": color_type
     })
     json.dump(trapped_users, open("TrappedUsers.json", "w"))
+    print(response.format(user, color_type))
     await client.say(response.format(user, color_type))
 
 
@@ -336,6 +294,10 @@ async def on_message(message: Message):
         return
     if message.content.startswith(client.command_prefix):
         await client.process_commands(message)
+        return
+
+    if "teleports" in message.content:
+        await client.process_commands("+pop " + message.author.mention)
         return
 
     give_message_to_bot: bool = False
