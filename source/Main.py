@@ -4,15 +4,17 @@ import random
 import aiml
 import os
 import asyncio
-from discord import Game, Message
+import time
+from discord import Game, Message, Channel
 from discord.ext.commands import Bot
 
-client = Bot(command_prefix="+")
+client: Bot = Bot(command_prefix="+")
 
 kernel = aiml.Kernel()
-
+start_time = time.time()
 trapped_users = json.load(open("TrappedUsers.json", "r"))
 trapping_text = json.load(open("TrappingText.json", "r"))
+maximum_bubble_time = 43200  # seconds = 12 hours
 
 
 class TextFilter:
@@ -26,9 +28,7 @@ def get_filtered_possibility(play_type='#', bubble_type='#'):
 
     first_filtered_possibilities = []
 
-    print(bubble_type)
     for possibility in trapping_text:
-        print(possibility["bubble_type"])
         if possibility["bubble_type"] == bubble_type:
             first_filtered_possibilities.append(possibility)
 
@@ -201,14 +201,15 @@ async def bubble(ctx, user=None, bubble_type='#', color_type='#', play_type='#')
     bubble_type = bubble_type.lower()
 
     response: str = get_filtered_possibility(play_type, bubble_type)
-
+    user_channel: Channel = ctx.message.channel
     trapped_users.append({
         "user_mention": user,
         "bubble_type": bubble_type,
-        "bubble_color": color_type
+        "bubble_color": color_type,
+        "time": time.time(),
+        "channel": user_channel.id
     })
     json.dump(trapped_users, open("TrappedUsers.json", "w"))
-    print(response.format(user, color_type))
     await client.say(response.format(user, color_type))
 
 
@@ -222,14 +223,20 @@ async def leave_bubble(ctx, user=None):
     if type(user) is str:
         for current_user in trapped_users:
             if user == current_user["user_mention"]:
-                removed_user = current_user
-                trapped_users.remove(current_user)
-                json.dump(trapped_users, open("TrappedUsers.json", "w"))
-                await client.say("The {2} {1} bubble in which {0} was just pops "
-                                 "and {0} is now free.".format(removed_user["user_mention"],
-                                                               removed_user["bubble_type"],
-                                                               removed_user["bubble_color"]))
-                return
+                if ctx.message.author.mention == user:
+                    await client.say("{0} tries to pop the bubble but only manages to stretch it, "
+                                     "seeing how resilient it is and unable to pop it. "
+                                     "Only someone else may pop it or it will pop by itself after some time."
+                                     .format(user))
+                    return
+                else:
+                    await client.say("The {2} {1} bubble in which {0} was just pops "
+                                     "and {0} is now free.".format(current_user["user_mention"],
+                                                                   current_user["bubble_type"],
+                                                                   current_user["bubble_color"]))
+                    trapped_users.remove(current_user)
+                    json.dump(trapped_users, open("TrappedUsers.json", "w"))
+                    return
 
         await client.say("{0} isn't trapped in any kind of bubble. "
                          "Maybe {0} needs to be in one :3".format(user))
@@ -330,9 +337,26 @@ async def on_message(message: Message):
                 brief="Won't exist in final version",
                 aliases=['t'])
 async def test():
-    await client.say("```\n"
-                     + "uhh" +
-                     "\n```")
+    await client.say(round(time.time()-start_time))
+    print(time.time())
+    print(time.time()-start_time)
+    if time.time()-start_time > 15:
+        await client.say("some time has passed")
+
+
+async def verify_pop():
+    await client.wait_until_ready()
+    while not client.is_closed:
+        for trapped_user in trapped_users:
+            if time.time() - trapped_user["time"] > maximum_bubble_time:
+                await client.send_message(client.get_channel(trapped_user["channel"]),
+                                          "After some time the {2} {1} bubble fails to hold it "
+                                          "composure and pops freeing {0}. ".format(trapped_user["user_mention"],
+                                                                                    trapped_user["bubble_type"],
+                                                                                    trapped_user["bubble_color"]))
+                trapped_users.remove(trapped_user)
+                json.dump(trapped_users, open("TrappedUsers.json", "w"))
+        await asyncio.sleep(5)
 
 if __name__ == "__main__":
 
@@ -344,4 +368,5 @@ if __name__ == "__main__":
 
     my_token = json.load(open("config.json", "r"))
     client.loop.create_task(list_servers())
+    client.loop.create_task(verify_pop())
     client.run(my_token["token"])
