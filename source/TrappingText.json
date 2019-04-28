@@ -35,6 +35,11 @@
 "bubble_type":"plastic"
 },
 {
+"text":"I pop on screen and start to blow as your screen starts to ripple like water as a {1} plastic bubble suddenly expands form your screen. I blow the {1} plastic bubble directly out of {0}'s screen and it gets big so fast that {0} couldn't react and gets trapped inside the bubble.",
+"play_type":"trap",
+"bubble_type":"plastic"
+},
+{
 "text":"I pulled out a bazooka and aimed it at {0} pressing the trigger then a loud BOOOING sound came from the end of it launching a {1} rubber bubble at {0} then went above HIS head and come down smooshing {0} inside.",
 "play_type":"trap",
 "bubble_type":"rubber"

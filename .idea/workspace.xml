@@ -3,7 +3,31 @@
   <component name="ChangeListManager">
     <list default="true" id="e75aa6d8-978a-436e-a756-a43ff4142ecf" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/Fysallida.brain" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/Fysallida.properties" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/source/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/Main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/TrappingText.json" beforeDir="false" afterPath="$PROJECT_DIR$/source/TrappingText.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/basic_chat.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/bubble.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/copyme.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/currency.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/emotion.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/horoscope.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/howmany.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/iu.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/knockknock.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/maths.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/mp0.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/mp1.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/mp2.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/mp3.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/mp4.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/mp5.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/mp6.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/salutations.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/std-startup.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/test.aiml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/zbert.aiml" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -26,8 +50,9 @@
           <entry key="project.open.time.26" value="2" />
           <entry key="project.open.time.34" value="1" />
           <entry key="project.open.time.6" value="1" />
+          <entry key="project.open.time.7" value="1" />
           <entry key="project.open.time.9" value="1" />
-          <entry key="project.opened" value="13" />
+          <entry key="project.opened" value="14" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -42,12 +67,12 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="7702" />
+          <entry key="py" value="7759" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="7702" />
+          <entry key="Python" value="7759" />
         </counts>
       </usages-collector>
     </session>
@@ -57,10 +82,10 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/source/Main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="327">
-              <caret line="237" column="76" selection-start-line="237" selection-start-column="76" selection-end-line="237" selection-end-column="76" />
+            <state relative-caret-position="365">
+              <caret line="350" column="34" lean-forward="true" selection-start-line="350" selection-start-column="34" selection-end-line="350" selection-end-column="34" />
               <folding>
-                <element signature="e#23#34#0" expanded="true" />
+                <element signature="e#405#416#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -89,11 +114,11 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="1">
-    <option name="x" value="950" />
-    <option name="y" value="15" />
-    <option name="width" value="934" />
-    <option name="height" value="812" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1936" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -185,16 +210,16 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="950" y="15" width="934" height="812" extended-state="1" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24665178" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.11643836" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3264642" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49947312" visible="true" weight="0.12979351" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.39719626" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49947312" visible="true" weight="0.12906724" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39696312" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.329718" />
@@ -211,6 +236,15 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/source/Main.py</url>
+          <line>333</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
         <watch expression="trapped_users" language="Python" />
@@ -285,10 +319,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/source/Main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="327">
-          <caret line="237" column="76" selection-start-line="237" selection-start-column="76" selection-end-line="237" selection-end-column="76" />
+        <state relative-caret-position="365">
+          <caret line="350" column="34" lean-forward="true" selection-start-line="350" selection-start-column="34" selection-end-line="350" selection-end-column="34" />
           <folding>
-            <element signature="e#23#34#0" expanded="true" />
+            <element signature="e#405#416#0" expanded="true" />
           </folding>
         </state>
       </provider>
