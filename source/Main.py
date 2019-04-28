@@ -1,8 +1,8 @@
 # Work with Python 3.6
 import json
 import random
-import aiml
-import os
+# import aiml
+# import os
 import asyncio
 import time
 from discord import Game, Message, Channel
@@ -10,11 +10,14 @@ from discord.ext.commands import Bot
 
 client: Bot = Bot(command_prefix="+")
 
-kernel = aiml.Kernel()
+# kernel = aiml.Kernel()
 start_time = time.time()
+
 trapped_users = json.load(open("TrappedUsers.json", "r"))
 trapping_text = json.load(open("TrappingText.json", "r"))
+
 maximum_bubble_time = 43200  # seconds = 12 hours
+maximum_number_of_popping_times = 3
 
 
 class TextFilter:
@@ -172,7 +175,8 @@ async def hello(ctx):
                 brief="I use bubbles to play with someone",
                 aliases=['putInABubble', 'putInBubble'],
                 pass_context=True)
-async def bubble(ctx, user=None, bubble_type='#', color_type='#', play_type='#'):
+async def bubble(ctx, user=None, bubble_type='#', color_type='#',
+                 seconds_trapped: int = maximum_bubble_time, play_type='#',):
     if user is None:
         all_users = get_all_members(ctx)
         if not all_users:
@@ -200,40 +204,73 @@ async def bubble(ctx, user=None, bubble_type='#', color_type='#', play_type='#')
     play_type = play_type.lower()
     bubble_type = bubble_type.lower()
 
+    seconds_trapped = maximum_bubble_time - seconds_trapped
     response: str = get_filtered_possibility(play_type, bubble_type)
     user_channel: Channel = ctx.message.channel
     trapped_users.append({
         "user_mention": user,
         "bubble_type": bubble_type,
         "bubble_color": color_type,
-        "time": time.time(),
-        "channel": user_channel.id
+        "time": time.time() - seconds_trapped,
+        "channel": user_channel.id,
+        "tries": 0
     })
     json.dump(trapped_users, open("TrappedUsers.json", "w"))
     await client.say(response.format(user, color_type))
 
 
-# Free someone from a bubble
+# Free yourself or someone else someone from a bubble
 @client.command(name='pop',
                 description="Let's someone free.",
                 brief="I get someone out of their bubble zone.",
                 aliases=['letGo', 'popBubble', 'lego', 'letgo', 'popbubble', 'release'],
                 pass_context=True)
 async def leave_bubble(ctx, user=None):
+    if user is None:
+        user = ctx.message.author.mention
+
     if type(user) is str:
+        for current_user in trapped_users:
+            if ctx.message.author.mention == current_user:
+                await client.say("{0} is inside a bubble and is unable to pop anyone else's bubble because of that, "
+                                 "{0}'s actions being limited to the insides of the bubble"
+                                 .format(user))
+                return
+
         for current_user in trapped_users:
             if user == current_user["user_mention"]:
                 if ctx.message.author.mention == user:
-                    await client.say("{0} tries to pop the bubble but only manages to stretch it, "
-                                     "seeing how resilient it is and unable to pop it. "
-                                     "Only someone else may pop it or it will pop by itself after some time."
-                                     .format(user))
+                    if current_user["tries"] >= maximum_number_of_popping_times:
+
+                        text_to_say = ["The {2} {1} bubble in which {0} was just pops after so many tries to escape"
+                                       "and {0} is now free. (Maybe there was some unknown force that let you free)",
+                                       "I reach out and touch {0}'s {2} {1} bubble in which "
+                                       "{0} was trapped in, after which it pops and {0} is now free."]
+
+                        await client.say(random.choice(text_to_say).format(current_user["user_mention"],
+                                                                           current_user["bubble_type"],
+                                                                           current_user["bubble_color"]))
+                        trapped_users.remove(current_user)
+                        json.dump(trapped_users, open("TrappedUsers.json", "w"))
+                        return
+
+                    text_to_say = "{0} tries to pop the bubble but only manages to stretch it, " \
+                                  "seeing how resilient it is and unable to pop it. " \
+                                  "Only someone else may pop it or it will pop by itself after some time. "
+                    if current_user["tries"] >= maximum_number_of_popping_times - 1:
+                        text_to_say += "The bubble seems to have lost some of it's resistance after " \
+                                       "so many attempts to free yourself."
+
+                    await client.say(text_to_say.format(user))
+                    current_user["tries"] += 1
+                    json.dump(trapped_users, open("TrappedUsers.json", "w"))
                     return
                 else:
-                    await client.say("The {2} {1} bubble in which {0} was just pops "
-                                     "and {0} is now free.".format(current_user["user_mention"],
-                                                                   current_user["bubble_type"],
-                                                                   current_user["bubble_color"]))
+                    await client.say("{3} pops the {2} {1} bubble in which {0} was just, freeing {0} "
+                                     "from the bubbly, comfy prison".format(current_user["user_mention"],
+                                                                            current_user["bubble_type"],
+                                                                            current_user["bubble_color"],
+                                                                            ctx.message.author.mention))
                     trapped_users.remove(current_user)
                     json.dump(trapped_users, open("TrappedUsers.json", "w"))
                     return
@@ -303,10 +340,7 @@ async def on_message(message: Message):
         await client.process_commands(message)
         return
 
-    if "teleports" in message.content:
-        await client.process_commands("+pop " + message.author.mention)
-        return
-
+    '''
     give_message_to_bot: bool = False
     message_to_give: str = message.content
 
@@ -323,12 +357,14 @@ async def on_message(message: Message):
         message_to_give = message_to_give.replace(client.user.mention + " ", '', 1)
         give_message_to_bot = True
 
+    
     if give_message_to_bot:
         session_id = 1  # Should use a map for every member to have a separate id
         bot_response = kernel.respond(message_to_give, session_id)
         print(bot_response)
         if bot_response != '':
             await client.send_message(message.channel, bot_response)
+    '''
 
 
 # Test
@@ -360,12 +396,15 @@ async def verify_pop():
 
 if __name__ == "__main__":
 
+    '''
     if os.path.isfile("Fysallida.brain"):
         kernel.bootstrap(brainFile="Fysallida.brain")
     else:
         kernel.bootstrap(learnFiles="std-startup.xml", commands="load aiml b")
         kernel.saveBrain("Fysallida.brain")
+    '''
 
+    maximum_number_of_popping_times -= 1  # this is needed to adjust the constant to be the number of tries specified
     my_token = json.load(open("config.json", "r"))
     client.loop.create_task(list_servers())
     client.loop.create_task(verify_pop())
