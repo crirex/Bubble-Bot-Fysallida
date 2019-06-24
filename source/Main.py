@@ -1,9 +1,10 @@
+#!/usr/bin/python3.6
 # Work with Python 3.6
 import json
 import random
 import asyncio
 import time
-from discord import Game, Message, Channel
+from discord import Game, Message
 from discord.ext.commands import Bot
 
 client: Bot = Bot(command_prefix="+")
@@ -202,7 +203,7 @@ async def bubble(ctx, user=None, bubble_type='#', color_type='#',
 
     seconds_trapped = maximum_bubble_time - seconds_trapped
     response: str = get_filtered_possibility(play_type, bubble_type)
-    user_channel: Channel = ctx.message.channel
+    user_channel = ctx.message.channel
     trapped_users.append({
         "user_mention": user,
         "bubble_type": bubble_type,
@@ -237,7 +238,7 @@ async def leave_bubble(ctx, user=None):
             if user == current_user["user_mention"]:
                 if ctx.message.author.mention == user:
                     if current_user["tries"] >= maximum_number_of_popping_times:
-                        text_to_say = ["The {2} {1} bubble in which {0} was just pops after so many tries to escape"
+                        text_to_say = ["The {2} {1} bubble in which {0} was just pops after so many tries to escape "
                                        "and {0} is now free. (Maybe there was some unknown force that let you free)",
                                        "I reach out and touch {0}'s {2} {1} bubble in which "
                                        "{0} was trapped in, after which it pops and {0} is now free."]
@@ -294,6 +295,7 @@ async def logout(ctx):
         if client.is_logged_in:
             await client.logout()
             print("Logged out")
+            exit()
 
 
 # Joins the voice channel of the person that used the command
