@@ -7,7 +7,9 @@ import time
 from discord import Game, Message
 from discord.ext.commands import Bot
 
-client: Bot = Bot(command_prefix="+")
+config = json.load(open("config.json", "r"))
+
+client: Bot = Bot(command_prefix=config["prefix"])
 
 start_time = time.time()
 
@@ -387,7 +389,6 @@ async def verify_pop():
 
 if __name__ == "__main__":
     maximum_number_of_popping_times -= 1  # this is needed to adjust the constant to be the number of tries specified
-    my_token = json.load(open("config.json", "r"))
     client.loop.create_task(list_servers())
     client.loop.create_task(verify_pop())
-    client.run(my_token["token"])
+    client.run(config["token"])
