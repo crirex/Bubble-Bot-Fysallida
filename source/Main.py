@@ -64,7 +64,7 @@ def trapped(user):
 
 def get_all_members(ctx):
     all_users = []
-    for current_user in ctx.message.server.members:
+    for current_user in ctx.message.guild.members:
         if (current_user.status != "offline") & (
                 current_user.status != "busy") & (
                 not current_user.bot) & (
@@ -116,7 +116,8 @@ async def introduction(ctx):
                            "or gum (glass too, but those make a dangerous mess when they break :pensive: ) " \
                            "and I can control them at my will to play with somebody :3 " \
                            ". If you want to know how to use me just type \"+help\" and I'll be sure to help."
-    await client.send_message(ctx.message.author, introduction_message)
+
+    await ctx.message.author.send(introduction_message)
 
 
 # My help beside the normal help
@@ -149,7 +150,7 @@ async def help_output(ctx):
                    "as well. ( I guess it will only be from youtube, but who knows. )\n" \
                    "Thanks for using me and have a bubbly day :smile: .\n"
 
-    await client.send_message(ctx.message.author, help_message)
+    await ctx.message.author.send(help_message)
 
 
 # Hello command
@@ -165,7 +166,7 @@ async def hello(ctx):
         'Hey',
         'Greetings'
     }
-    await client.say(random.choice(possible_responses) + " " + ctx.message.author.mention)
+    await ctx.message.channel.send(random.choice(possible_responses) + " " + ctx.message.author.mention)
 
 
 # Puts someone in a bubble
@@ -179,18 +180,22 @@ async def bubble(ctx, user=None, bubble_type='#', color_type='#',
     if user is None:
         all_users = get_all_members(ctx)
         if not all_users:
-            await client.say("No eligible member has been found.")
+            await ctx.message.channel.send("No eligible member has been found.")
             return
         user = (random.choice(all_users)).mention
     else:
         if trapped(user):
-            await client.say("{0} is already trapped in a bubble and cannot be put in another one right now. "
-                             "You could get him out of the bubble if you want to.".format(user))
+            await ctx.message.channel.send(
+                "{0} is already trapped in a bubble and cannot be put in another one right now. "
+                "You could get him out of the bubble if you want to."
+                .format(user))
             return
         if (user.lower() == "pop") | (user.lower() == "release"):
             user = bubble_type
             print(user)
-            await client.say("{0}, you need to use the \"+pop @name\" command".format(ctx.message.author.mention))
+            await ctx.message.channel.send(
+                "{0}, you need to use the \"+pop @name\" command"
+                .format(ctx.message.author.mention))
             return
 
     if color_type == '#':
@@ -215,7 +220,7 @@ async def bubble(ctx, user=None, bubble_type='#', color_type='#',
         "tries": 0
     })
     json.dump(trapped_users, open("TrappedUsers.json", "w"))
-    await client.say(response.format(user, color_type))
+    await ctx.message.channel.send(response.format(user, color_type))
 
 
 # Free yourself or someone else someone from a bubble
@@ -231,9 +236,10 @@ async def leave_bubble(ctx, user=None):
     if type(user) is str:
         for current_user in trapped_users:
             if ctx.message.author.mention == current_user:
-                await client.say("{0} is inside a bubble and is unable to pop anyone else's bubble because of that, "
-                                 "{0}'s actions being limited to the insides of the bubble"
-                                 .format(user))
+                await ctx.message.channel.send(
+                    "{0} is inside a bubble and is unable to pop anyone else's bubble because of that, "
+                    "{0}'s actions being limited to the insides of the bubble"
+                    .format(user))
                 return
 
         for current_user in trapped_users:
@@ -245,9 +251,10 @@ async def leave_bubble(ctx, user=None):
                                        "I reach out and touch {0}'s {2} {1} bubble in which "
                                        "{0} was trapped in, after which it pops and {0} is now free."]
 
-                        await client.say(random.choice(text_to_say).format(current_user["user_mention"],
-                                                                           current_user["bubble_type"],
-                                                                           current_user["bubble_color"]))
+                        await ctx.message.channel.send(random.choice(text_to_say)
+                                                       .format(current_user["user_mention"],
+                                                               current_user["bubble_type"],
+                                                               current_user["bubble_color"]))
                         trapped_users.remove(current_user)
                         json.dump(trapped_users, open("TrappedUsers.json", "w"))
                         return
@@ -259,30 +266,30 @@ async def leave_bubble(ctx, user=None):
                         text_to_say += "The bubble seems to have lost some of it's resistance after " \
                                        "so many attempts to free yourself."
 
-                    await client.say(text_to_say.format(user))
+                    await ctx.message.channel.send(text_to_say.format(user))
                     current_user["tries"] += 1
                     json.dump(trapped_users, open("TrappedUsers.json", "w"))
                     return
                 else:
-                    await client.say("{3} pops the {2} {1} bubble in which {0} was just, freeing {0} "
-                                     "from the bubbly, comfy prison".format(current_user["user_mention"],
-                                                                            current_user["bubble_type"],
-                                                                            current_user["bubble_color"],
-                                                                            ctx.message.author.mention))
+                    await ctx.message.channel.send("{3} pops the {2} {1} bubble in which {0} was just, freeing {0} "
+                                                   "from the bubbly, comfy prison".format(current_user["user_mention"],
+                                                                                          current_user["bubble_type"],
+                                                                                          current_user["bubble_color"],
+                                                                                          ctx.message.author.mention))
                     trapped_users.remove(current_user)
                     json.dump(trapped_users, open("TrappedUsers.json", "w"))
                     return
 
-        await client.say("{0} isn't trapped in any kind of bubble. "
-                         "Maybe {0} needs to be in one :3".format(user))
+        await ctx.message.channel.send("{0} isn't trapped in any kind of bubble. "
+                                       "Maybe {0} needs to be in one :3".format(user))
     else:
-        await client.say("{0}, you need to specify who to let go.".format(ctx.message.author.mention))
+        await ctx.message.channel.send("{0}, you need to specify who to let go.".format(ctx.message.author.mention))
 
 
 # Just initialize stuff
 @client.event
 async def on_ready():
-    await client.change_presence(game=Game(name="with bubbles."))
+    await client.change_presence(activity=Game(name="with bubbles."))
     print('Logged in as')
     print(client.user.name)
     print(client.user.id)
@@ -294,18 +301,17 @@ async def on_ready():
                 pass_context=True)
 async def logout(ctx):
     if ctx.message.author.mention == "<@142593360992010240>":
-        if client.is_logged_in:
-            await client.logout()
-            print("Logged out")
-            exit()
+        await client.logout()
+        print("Logged out")
+        exit()
 
 
-# Joins the voice channel of the person that used the command
+# Joins the voice channels of the person that used the command
 @client.command(name='join',
                 pass_context=True)
 async def join_voice(ctx):
-    channel = ctx.message.author.voice.voice_channel
-    await client.join_voice_channel(channel)
+    channel = ctx.message.author.voice.channel
+    await channel.connect()
     print("Joined voice channel")
 
 
@@ -313,9 +319,8 @@ async def join_voice(ctx):
 @client.command(name='leave',
                 pass_context=True)
 async def leave_voice(ctx):
-    server = ctx.message.server
-    voice_client = client.voice_client_in(server)
-    await voice_client.disconnect()
+    server = ctx.message.guild
+    await server.voice_client.disconnect()
     print("Left voice channel")
 
 
@@ -324,7 +329,7 @@ async def list_servers():
     await client.wait_until_ready()
     while not client.is_closed:
         print("Current servers:")
-        for server in client.servers:
+        for server in client.guilds:
             print(server.name)
         await asyncio.sleep(3600)
 
@@ -364,12 +369,12 @@ async def on_message(message: Message):
                 description="test",
                 brief="Won't exist in final version",
                 aliases=['t'])
-async def test():
-    await client.say(round(time.time() - start_time))
+async def test(ctx):
+    await ctx.message.channel.send(round(time.time() - start_time))
     print(time.time())
     print(time.time() - start_time)
     if time.time() - start_time > 15:
-        await client.say("some time has passed")
+        await ctx.message.channel.send("some time has passed")
 
 
 async def verify_pop():
@@ -377,11 +382,11 @@ async def verify_pop():
     while not client.is_closed:
         for trapped_user in trapped_users:
             if time.time() - trapped_user["time"] > maximum_bubble_time:
-                await client.send_message(client.get_channel(trapped_user["channel"]),
-                                          "After some time the {2} {1} bubble fails to hold it "
-                                          "composure and pops freeing {0}. ".format(trapped_user["user_mention"],
-                                                                                    trapped_user["bubble_type"],
-                                                                                    trapped_user["bubble_color"]))
+                await client.get_channel(trapped_user["channel"]).send(
+                    "After some time the {2} {1} bubble fails to hold it "
+                    "composure and pops freeing {0}. ".format(trapped_user["user_mention"],
+                                                              trapped_user["bubble_type"],
+                                                              trapped_user["bubble_color"]))
                 trapped_users.remove(trapped_user)
                 json.dump(trapped_users, open("TrappedUsers.json", "w"))
         await asyncio.sleep(5)
