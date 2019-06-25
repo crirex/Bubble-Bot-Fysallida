@@ -300,10 +300,10 @@ async def on_ready():
 @client.command(name='logout',
                 pass_context=True)
 async def logout(ctx):
-    if ctx.message.author.mention == "<@142593360992010240>":
+    if ctx.message.author.id == config["owner"]:
+        print("Logging out")
         await client.logout()
-        print("Logged out")
-        exit()
+        # nothing past here is executed
 
 
 # Joins the voice channels of the person that used the command
