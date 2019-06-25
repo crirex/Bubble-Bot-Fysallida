@@ -59,7 +59,7 @@ class Bubbles(commands.Cog):
             "tries": 0
         })
         dump_json(trapped_users, trapped_users_json)
-        await ctx.message.channel.send(response.format(user, color_type))
+        await ctx.message.channel.send(response.format(user=user, color=color_type))
 
     # Free yourself or someone else someone from a bubble
     @commands.command(name='pop',
