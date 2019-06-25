@@ -1,15 +1,30 @@
 import random
 import json
 import time
+import typing
+from json import JSONDecodeError
 
 start_time = time.time()
-
-config = json.load(open("config.json", "r"))
-trapped_users = json.load(open("TrappedUsers.json", "r"))
-trapping_text = json.load(open("TrappingText.json", "r"))
-
 maximum_bubble_time = 43200  # seconds = 12 hours
 maximum_number_of_popping_times = 3
+
+with open("config.json", "r") as config_json:
+    config = json.load(config_json)
+with open("TrappingText.json", "r") as trapping_text_json:
+    trapping_text = json.load(trapping_text_json)
+try:
+    with open("TrappedUsers.json", "r") as trapped_users_json:
+        trapped_users = json.load(trapped_users_json)
+except (JSONDecodeError, IOError):
+    trapped_users = []
+trapped_users_json = open("TrappedUsers.json", "w")
+
+
+def dump_json(data, file: typing.IO):
+    file.seek(0)
+    file.truncate(0)
+    json.dump(data, file)
+    file.flush()
 
 
 class TextFilter:

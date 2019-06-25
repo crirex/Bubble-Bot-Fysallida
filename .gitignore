@@ -106,5 +106,7 @@ venv.bak/
 # PyCharm
 .idea/
 
-# Ignore config
-config.json
+# Per-bot config
+source/config.json
+# List of trapped users
+source/TrappedUsers.json

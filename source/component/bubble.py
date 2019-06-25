@@ -58,7 +58,7 @@ class Bubbles(commands.Cog):
             "channel": user_channel.id,
             "tries": 0
         })
-        json.dump(trapped_users, open("TrappedUsers.json", "w"))
+        dump_json(trapped_users, trapped_users_json)
         await ctx.message.channel.send(response.format(user, color_type))
 
     # Free yourself or someone else someone from a bubble
@@ -96,7 +96,7 @@ class Bubbles(commands.Cog):
                                                                    current_user["bubble_type"],
                                                                    current_user["bubble_color"]))
                             trapped_users.remove(current_user)
-                            json.dump(trapped_users, open("TrappedUsers.json", "w"))
+                            dump_json(trapped_users, trapped_users_json)
                             return
 
                         text_to_say = "{0} tries to pop the bubble but only manages to stretch it, " \
@@ -107,7 +107,7 @@ class Bubbles(commands.Cog):
                                            "so many attempts to free yourself."
 
                         await ctx.message.channel.send(text_to_say.format(user))
-                        json.dump(trapped_users, open("TrappedUsers.json", "w"))
+                        dump_json(trapped_users, trapped_users_json)
                         return
                     else:
                         await ctx.message.channel.send(
@@ -119,7 +119,7 @@ class Bubbles(commands.Cog):
                                 current_user["bubble_color"],
                                 ctx.message.author.mention))
                         trapped_users.remove(current_user)
-                        json.dump(trapped_users, open("TrappedUsers.json", "w"))
+                        dump_json(trapped_users, trapped_users_json)
                         return
 
             await ctx.message.channel.send("{0} isn't trapped in any kind of bubble. "

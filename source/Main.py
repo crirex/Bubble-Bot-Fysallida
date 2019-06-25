@@ -13,6 +13,7 @@ client: Bot = Bot(command_prefix=config["prefix"])
                 pass_context=True)
 async def logout(ctx):
     if ctx.message.author.id == config["owner"]:
+        trapped_users_json.close()
         print("Logging out")
         await client.logout()
         # nothing past here is executed
@@ -92,7 +93,7 @@ async def verify_pop():
                                                               trapped_user["bubble_type"],
                                                               trapped_user["bubble_color"]))
                 trapped_users.remove(trapped_user)
-                json.dump(trapped_users, open("TrappedUsers.json", "w"))
+                dump_json(trapped_users, trapped_users_json)
         await asyncio.sleep(5)
 
 
