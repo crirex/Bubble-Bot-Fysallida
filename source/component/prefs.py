@@ -3,11 +3,18 @@ from discord.ext.commands import Context
 from globals import *
 
 
-def get_user_prefs(user_id: int):
+def get_user_prefs(user_id):
     user_id = str(user_id)
-    if user_id not in user_preferences:
-        user_preferences[str(user_id)] = {}
-    return user_preferences[str(user_id)]
+    prefs = user_preferences[str(user_id)] if user_id in user_preferences else {}
+    if "pronouns" not in prefs:
+        prefs["pronouns"] = {
+            "they": "they",
+            "them": "them",
+            "their": "their",
+            "theirs": "theirs",
+            "themself": "themself"
+        }
+    return prefs
 
 
 class Preferences(commands.Cog):

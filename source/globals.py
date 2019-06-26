@@ -67,25 +67,6 @@ def get_filtered_possibility(play_type='#', bubble_type='#'):
     return message
 
 
-def get_all_members(ctx):
-    all_users = []
-    for current_user in ctx.message.guild.members:
-        if (current_user.status != "offline") & (
-                current_user.status != "busy") & (
-                not current_user.bot) & (
-                not trapped(current_user.mention)):
-            all_users.append(current_user)
-    return all_users
-
-
-def trapped(user):
-    if type(user) is str:
-        for current_user in trapped_users:
-            if user == current_user["user_mention"]:
-                return True
-    return False
-
-
 def get_random_bubble_type():
     all_bubble_types = [
         "soap",
