@@ -3,6 +3,13 @@ from discord.ext.commands import Context
 from globals import *
 
 
+def get_user_prefs(user_id: int):
+    user_id = str(user_id)
+    if user_id not in user_preferences:
+        user_preferences[str(user_id)] = {}
+    return user_preferences[str(user_id)]
+
+
 class Preferences(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -14,9 +21,9 @@ class Preferences(commands.Cog):
     @preferences.command()
     async def pronouns(self, ctx: Context, they: str, them: str, their: str, theirs: str, themself: str):
         get_user_prefs(ctx.author.id)["pronouns"] = {"they": they,
-                                                 "them": them,
-                                                 "their": their,
-                                                 "theirs": theirs,
-                                                 "themself": themself}
+                                                     "them": them,
+                                                     "their": their,
+                                                     "theirs": theirs,
+                                                     "themself": themself}
         dump_json(user_preferences, user_preferences_json)
         await ctx.message.channel.send("Preferences updated.")

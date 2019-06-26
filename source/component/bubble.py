@@ -3,6 +3,7 @@ from globals import *
 import random
 import time
 from formatter import formatter
+from .prefs import get_user_prefs
 
 
 class Bubbles(commands.Cog):
@@ -28,14 +29,14 @@ class Bubbles(commands.Cog):
                 await ctx.message.channel.send(
                     "{0} is already trapped in a bubble and cannot be put in another one right now. "
                     "You could get him out of the bubble if you want to."
-                        .format(user))
+                    .format(user))
                 return
             if (user.lower() == "pop") | (user.lower() == "release"):
                 user = bubble_type
                 print(user)
                 await ctx.message.channel.send(
                     "{0}, you need to use the \"+pop @name\" command"
-                        .format(ctx.message.author.mention))
+                    .format(ctx.message.author.mention))
                 return
 
         if color_type == '#':
@@ -98,7 +99,7 @@ class Bubbles(commands.Cog):
                     await ctx.message.channel.send(
                         "{0} is inside a bubble and is unable to pop anyone else's bubble because of that, "
                         "{0}'s actions being limited to the insides of the bubble"
-                            .format(user))
+                        .format(user))
                     return
 
             for current_user in trapped_users:
@@ -134,7 +135,7 @@ class Bubbles(commands.Cog):
                         await ctx.message.channel.send(
                             "{3} pops the {2} {1} bubble in which {0} was just, freeing {0} "
                             "from the bubbly, comfy prison"
-                                .format(
+                            .format(
                                 current_user["user_mention"],
                                 current_user["bubble_type"],
                                 current_user["bubble_color"],

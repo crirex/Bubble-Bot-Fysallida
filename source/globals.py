@@ -26,13 +26,6 @@ except (JSONDecodeError, IOError):
 user_preferences_json = open("UserPreferences.json", "r+")
 
 
-def get_user_prefs(user_id: int):
-    user_id = str(user_id)
-    if user_id not in user_preferences:
-        user_preferences[str(user_id)] = {}
-    return user_preferences[str(user_id)]
-
-
 def dump_json(data, file: typing.IO):
     file.seek(0)
     file.truncate(0)
