@@ -110,3 +110,5 @@ venv.bak/
 source/config.json
 # List of trapped users
 source/TrappedUsers.json
+# User preferences
+source/UserPreferences.json

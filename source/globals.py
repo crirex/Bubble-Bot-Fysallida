@@ -17,7 +17,20 @@ try:
         trapped_users = json.load(trapped_users_json)
 except (JSONDecodeError, IOError):
     trapped_users = []
-trapped_users_json = open("TrappedUsers.json", "w")
+trapped_users_json = open("TrappedUsers.json", "w+")
+try:
+    with open("UserPreferences.json", "r") as user_preferences_json:
+        user_preferences = json.load(user_preferences_json)
+except (JSONDecodeError, IOError):
+    user_preferences = {}
+user_preferences_json = open("UserPreferences.json", "r+")
+
+
+def get_user_prefs(user_id: int):
+    user_id = str(user_id)
+    if user_id not in user_preferences:
+        user_preferences[str(user_id)] = {}
+    return user_preferences[str(user_id)]
 
 
 def dump_json(data, file: typing.IO):

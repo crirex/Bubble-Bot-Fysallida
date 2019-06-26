@@ -100,6 +100,7 @@ async def verify_pop():
 if __name__ == "__main__":
     client.add_cog(Help(client))
     client.add_cog(Bubbles(client))
+    client.add_cog(Preferences(client))
     client.add_cog(Voice(client))
     client.loop.create_task(list_servers())
     client.loop.create_task(verify_pop())

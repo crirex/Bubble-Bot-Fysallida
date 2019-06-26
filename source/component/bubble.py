@@ -2,6 +2,7 @@ from discord.ext import commands
 from globals import *
 import random
 import time
+from formatter import formatter
 
 
 class Bubbles(commands.Cog):
@@ -27,14 +28,14 @@ class Bubbles(commands.Cog):
                 await ctx.message.channel.send(
                     "{0} is already trapped in a bubble and cannot be put in another one right now. "
                     "You could get him out of the bubble if you want to."
-                    .format(user))
+                        .format(user))
                 return
             if (user.lower() == "pop") | (user.lower() == "release"):
                 user = bubble_type
                 print(user)
                 await ctx.message.channel.send(
                     "{0}, you need to use the \"+pop @name\" command"
-                    .format(ctx.message.author.mention))
+                        .format(ctx.message.author.mention))
                 return
 
         if color_type == '#':
@@ -59,7 +60,27 @@ class Bubbles(commands.Cog):
             "tries": 0
         })
         dump_json(trapped_users, trapped_users_json)
-        await ctx.message.channel.send(response.format(user=user, color=color_type))
+        # TODO: fix to get victim's id
+        prefs = get_user_prefs(ctx.author.id)
+        if "pronouns" in prefs:
+            pronouns = get_user_prefs(ctx.author.id)["pronouns"]
+        else:
+            pronouns = {"they": "they",
+                        "them": "them",
+                        "their": "their",
+                        "theirs": "theirs",
+                        "themself": "themself"}
+
+        await ctx.message.channel.send(formatter.vformat(response, [],
+                                                         {
+                                                             "user": user,
+                                                             "color": color_type,
+                                                             "they": pronouns["they"],
+                                                             "them": pronouns["them"],
+                                                             "their": pronouns["their"],
+                                                             "theirs": pronouns["theirs"],
+                                                             "themself": pronouns["themself"],
+                                                         }))
 
     # Free yourself or someone else someone from a bubble
     @commands.command(name='pop',
@@ -77,7 +98,7 @@ class Bubbles(commands.Cog):
                     await ctx.message.channel.send(
                         "{0} is inside a bubble and is unable to pop anyone else's bubble because of that, "
                         "{0}'s actions being limited to the insides of the bubble"
-                        .format(user))
+                            .format(user))
                     return
 
             for current_user in trapped_users:
@@ -113,7 +134,7 @@ class Bubbles(commands.Cog):
                         await ctx.message.channel.send(
                             "{3} pops the {2} {1} bubble in which {0} was just, freeing {0} "
                             "from the bubbly, comfy prison"
-                            .format(
+                                .format(
                                 current_user["user_mention"],
                                 current_user["bubble_type"],
                                 current_user["bubble_color"],

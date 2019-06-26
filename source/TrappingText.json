@@ -1,46 +1,46 @@
 [
 {
-"text":"I create a {color} rubber bubble throwing it towards {user} as it surrounds {user} in it's rubbery walls squeezing them tight then {user} plopped inside trapped in my bubble.",
+"text":"I create a {color} rubber bubble throwing it towards {user} as it surrounds {them} in it's rubbery walls squeezing {them} tight then {they} {'plops|v|plop'} inside trapped in my bubble.",
 "play_type":"trap",
 "bubble_type":"rubber"
 },
 {
-"text":"I blow a {color} soap bubble and put {user} in it, as {user} floats a few inches in the air.",
+"text":"I blow a {color} soap bubble and put {user} in it, as {they} {'floats|v|float'} a few inches in the air.",
 "play_type":"trap",
 "bubble_type":"soap"
 },
 {
-"text":"I began to form a {color} rubber sphere bouncing it towards {user} then jumping on top of the rubber bubble and squeezed {user} underneath leaving {user} helpless until {user} sank inside and got trapped.",
+"text":"I began to form a {color} rubber sphere bouncing it towards {user} then jumping on top of the rubber bubble and squeezed {them} underneath leaving {them} helpless until {they} sank inside and got trapped.",
 "play_type":"trap",
 "bubble_type":"rubber"
 },
 {
-"text":"The ground shakes a bit underneath {user} as two {color} half spheres pop out from both sides of {user} and clamp together locking {user} inside a {color} glass Ball.",
+"text":"The ground shakes a bit underneath {user} as two {color} half spheres pop out from both sides of {them} and clamp together locking {them} inside a {color} glass Ball.",
 "play_type":"trap",
 "bubble_type":"glass"
 },
 {
-"text":"There is a lot of multicolor lights and a rainbow bubble is formed, wobbling towards {user}, absorbing {user} inside the bubble, with no way of using any sort of magic to escape.",
+"text":"There is a lot of multicolor lights and a rainbow bubble is formed, wobbling towards {user}, absorbing {them} inside the bubble, with no way of using any sort of magic to escape.",
 "play_type":"trap",
 "bubble_type":"magic"
 },
 {
-"text":"I make a small {color} plastic bubble. It inflates right in front of {user} as {user} can't move out of the way. {user}'s eyes are closed while {user} can feel the pressure of the bubble intensifying, then {user} feels like passing through something. {user} opens his eyes only to see that {user} is now inside the bubble that now has the same size as {user} is.",
+"text":"I make a small {color} plastic bubble. It inflates right in front of {user} as {they} can't move out of the way. {their!c} eyes are closed while {they} can feel the pressure of the bubble intensifying, then {they} {'feels|v|feel'} like passing through something. {they!c} {'opens|v|open'} {their} eyes only to see that {they} {'is|v|are'} now inside the bubble that now has the same size as {they} {'is|v|are'}.",
 "play_type":"trap",
 "bubble_type":"plastic"
 },
 {
-"text":"I blow a {color} plastic bubble directly out of {user}'s screen and it gets big so fast that {user} couldn't react and gets trapped inside the bubble.",
+"text":"I blow a {color} plastic bubble directly out of {user}'s screen and it gets big so fast that {they} couldn't react and gets trapped inside the bubble.",
 "play_type":"trap",
 "bubble_type":"plastic"
 },
 {
-"text":"I pop on screen and start to blow as your screen starts to ripple like water as a {color} plastic bubble suddenly expands form your screen. I blow the {color} plastic bubble directly out of {user}'s screen and it gets big so fast that {user} couldn't react and gets trapped inside the bubble.",
+"text":"I pop on screen and start to blow as {user}'s screen starts to ripple like water as a {color} plastic bubble suddenly expands form {their} screen. I blow the {color} plastic bubble directly out of {their} screen and it gets big so fast that {they} couldn't react and gets trapped inside the bubble.",
 "play_type":"trap",
 "bubble_type":"plastic"
 },
 {
-"text":"I pulled out a bazooka and aimed it at {user} pressing the trigger then a loud BOOOING sound came from the end of it launching a {color} rubber bubble at {user} then went above HIS head and come down smooshing {user} inside.",
+"text":"I pulled out a bazooka and aimed it at {user} pressing the trigger then a loud BOOOING sound came from the end of it launching a {color} rubber bubble at {them} then went above {their} head and come down smooshing {them} inside.",
 "play_type":"trap",
 "bubble_type":"rubber"
 }
