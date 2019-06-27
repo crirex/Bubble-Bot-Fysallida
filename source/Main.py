@@ -4,6 +4,7 @@ import asyncio
 from discord import Game, Message
 from discord.ext.commands import Bot
 from component import *
+from jsons import trapped_users_json
 
 client: Bot = Bot(command_prefix=config["prefix"])
 
@@ -13,7 +14,6 @@ client: Bot = Bot(command_prefix=config["prefix"])
                 pass_context=True)
 async def logout(ctx):
     if ctx.message.author.id == config["owner"]:
-        trapped_users_json.close()
         print("Logging out")
         await client.logout()
         # nothing past here is executed

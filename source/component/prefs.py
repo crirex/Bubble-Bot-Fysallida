@@ -5,6 +5,7 @@ import typing
 import inspect
 import itertools
 from enum import Enum
+from jsons import dump_json, user_preferences_json, PreferencesEncoder
 
 
 class Pronoun(Enum):
@@ -36,12 +37,22 @@ class _Pronoun(Converter):
         return Pronoun[argument.upper()]
 
 
-def get_user_prefs(user_id):
+def get_user_prefs(user_id: typing.Union[int, str]):
     user_id = str(user_id)
     prefs = user_preferences[str(user_id)] if user_id in user_preferences else {}
     if "pronouns" not in prefs:
         prefs["pronouns"] = Pronoun.THEY.value
+    if "blacklist" not in prefs:
+        prefs["blacklist"] = set()
     return prefs
+
+
+def set_user_prefs(user_id: typing.Union[int, str], prefs: dict):
+    user_preferences[str(user_id)] = prefs
+
+
+def save_user_prefs():
+    dump_json(user_preferences, user_preferences_json, cls=PreferencesEncoder)
 
 
 class Preferences(commands.Cog):
@@ -80,6 +91,36 @@ class Preferences(commands.Cog):
                 if not isinstance(they, Pronoun):
                     raise BadArgument("Pronoun \"{}\" is not a valid preset.".format(they))
                 pronouns = they.value
-        get_user_prefs(ctx.author.id)["pronouns"] = pronouns
-        dump_json(user_preferences, user_preferences_json)
+        prefs = get_user_prefs(ctx.author.id)
+        prefs["pronouns"] = pronouns
+        set_user_prefs(ctx.author.id, prefs)
+        save_user_prefs()
+        await ctx.message.channel.send("Preferences updated.")
+
+    @preferences.group(invoke_without_command=True)
+    async def blacklist(self, ctx: Context):
+        prefs = get_user_prefs(ctx.author.id)
+        tags: typing.Set[str] = prefs["blacklist"]
+        blacklist: str = ", ".join(sorted(tags))
+        if blacklist == "":
+            await ctx.message.channel.send("Blacklist empty.")
+        else:
+            await ctx.message.channel.send("Blacklist: " + blacklist)
+
+    @blacklist.command(name="add")
+    async def blacklist_add(self, ctx: Context, *args: str):
+        prefs = get_user_prefs(ctx.author.id)
+        tags: typing.Set[str] = prefs["blacklist"]
+        tags.update(args)
+        set_user_prefs(ctx.author.id, prefs)
+        save_user_prefs()
+        await ctx.message.channel.send("Preferences updated.")
+
+    @blacklist.command(name="remove")
+    async def blacklist_remove(self, ctx: Context, *args: str):
+        prefs = get_user_prefs(ctx.author.id)
+        tags: typing.Set[str] = prefs["blacklist"]
+        tags.difference_update(args)
+        set_user_prefs(ctx.author.id, prefs)
+        save_user_prefs()
         await ctx.message.channel.send("Preferences updated.")

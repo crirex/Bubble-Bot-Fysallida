@@ -2,6 +2,7 @@ from discord.ext import commands
 from discord.ext.commands import Context
 import discord
 from globals import *
+from jsons import dump_json, trapped_users_json
 import random
 import time
 import typing
@@ -55,6 +56,7 @@ class Bubbles(commands.Cog):
             user = random.choice(all_users)
         # Convert user to string
         user_mention: str = user.mention if isinstance(user, (discord.Member, discord.User)) else user
+        # noinspection PyUnusedLocal
         author_prefs = get_user_prefs(ctx.author.id)
         user_prefs = get_user_prefs(user.id if isinstance(user, (discord.Member, discord.User)) else user)
         if is_trapped(user_mention):
