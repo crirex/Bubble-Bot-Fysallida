@@ -1,23 +1,46 @@
+import re
 from string import Formatter as oldFormatter
+
+
+def import_pronouns(diction: dict, *pronouns: dict):
+    """Updates diction with multiple pronoun sets with keys "they0", "they1", ...
+    :param diction:
+    :param pronouns:
+    :return: None
+    """
+    for p in pronouns:
+        diction.update({str(kv[0]) + str(i): kv[1] for i, kv in enumerate(p.items())})
 
 
 # https://stackoverflow.com/a/46160537
 class Formatter(oldFormatter):
     def get_value(self, key, args, kwargs):
-        """Accept literal strings"""
+        """Accept literal strings, but no ! or :"""
         if isinstance(key, str):
             key = str(key)
+            # string literals and option literals
             if (key.startswith("\"") and key.endswith("\"")) or (key.startswith("'") and key.endswith("'")):
                 key = key[1:-1]
                 # verb conjugations
                 # ex. He/they {'has|v|have'}
-                if key.find("|v|") != -1:
-                    if "they" in kwargs:
-                        verbs = key.split("|v|")
-                        if kwargs["they"] == "they" or kwargs["they"] == "you":
-                            return verbs[1]
-                        else:
-                            return verbs[0]
+                conj_match = re.match(r"^(.*)\|v(\d*)\|(.*)$", key, re.DOTALL)
+                if conj_match is not None:
+                    singular, index, plural = conj_match.groups()
+                    if index == "":
+                        if "they" in kwargs:
+                            if kwargs["they"] == "they" or kwargs["they"] == "you":
+                                return plural
+                            else:
+                                return singular
+                        raise ValueError("Verb conjugation requires \"they\" key in kwargs")
+                    else:
+                        index = str(int(index))
+                        if "they"+index in kwargs:
+                            if kwargs["they"+index] == "they" or kwargs["they"+index] == "you":
+                                return plural
+                            else:
+                                return singular
+                        raise ValueError("Verb conjugation requires \"they{0}\" key in kwargs".format(index))
                 return key
         return super().get_value(key, args, kwargs)
 
