@@ -8,6 +8,7 @@ def import_pronouns(diction: dict, *pronouns: dict):
     :param pronouns:
     :return: None
     """
+    diction.update(pronouns[0])
     for p in pronouns:
         diction.update({str(kv[0]) + str(i): kv[1] for i, kv in enumerate(p.items())})
 

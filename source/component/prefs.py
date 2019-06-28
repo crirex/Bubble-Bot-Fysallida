@@ -45,6 +45,8 @@ def get_user_prefs(user_id: typing.Union[int, str]):
         prefs["pronouns"] = Pronoun.THEY.value
     if "blacklist" not in prefs:
         prefs["blacklist"] = set()
+    if "ping" not in prefs:
+        prefs["ping"] = True
     return prefs
 
 
@@ -133,3 +135,14 @@ class Preferences(commands.Cog):
         set_user_prefs(ctx.author.id, prefs)
         save_user_prefs()
         await ctx.message.channel.send("Preferences updated.")
+
+    @preferences.command()
+    async def ping(self, ctx: Context, can_ping: bool = None):
+        prefs = get_user_prefs(ctx.author.id)
+        if can_ping is None:
+            await ctx.message.channel.send("Will ping: {}".format(str(prefs["ping"]).lower()))
+        else:
+            prefs["ping"] = can_ping
+            set_user_prefs(ctx.author.id, prefs)
+            save_user_prefs()
+            await ctx.message.channel.send("Preferences updated.")
