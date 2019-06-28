@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord.ext.commands import Context, MissingRequiredArgument, Converter, BadArgument
+from discord.ext.commands import Context, MissingRequiredArgument, BadArgument
 from globals import *
 import typing
 import inspect
@@ -31,10 +31,11 @@ class Pronoun(Enum):
         "themself": "themself"
     }
 
-
-class PronounConverter(Converter):
-    async def convert(self, ctx, argument: str):
-        return Pronoun[argument.upper()]
+    # allow for discord.py to convert a string to this enum
+    # noinspection PyUnusedLocal
+    @classmethod
+    async def convert(cls, ctx, argument: str):
+        return cls[argument.upper()]
 
 
 def get_user_prefs(user_id: typing.Union[int, str]):
@@ -65,8 +66,7 @@ class Preferences(commands.Cog):
 
     @preferences.command()
     async def pronouns(self, ctx: Context,
-                       # Pronoun can't get converted but PronounConverter does it
-                       they: typing.Union[Pronoun, PronounConverter, str] = None,
+                       they: typing.Union[Pronoun, str] = None,
                        them: str = None, their: str = None, theirs: str = None, themself: str = None):
         # display pronouns
         if they is None:
