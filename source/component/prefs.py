@@ -32,7 +32,7 @@ class Pronoun(Enum):
     }
 
 
-class _Pronoun(Converter):
+class PronounConverter(Converter):
     async def convert(self, ctx, argument: str):
         return Pronoun[argument.upper()]
 
@@ -65,8 +65,16 @@ class Preferences(commands.Cog):
 
     @preferences.command()
     async def pronouns(self, ctx: Context,
-                       they: typing.Union[Pronoun, _Pronoun, str],  # Pronoun can't get converted but _Pronoun does it
+                       # Pronoun can't get converted but PronounConverter does it
+                       they: typing.Union[Pronoun, PronounConverter, str] = None,
                        them: str = None, their: str = None, theirs: str = None, themself: str = None):
+        # display pronouns
+        if they is None:
+            pronouns = get_user_prefs(ctx.author.id)["pronouns"]
+            await ctx.message.channel.send("Pronouns: {they}/{them}/{their}/{theirs}/{themself}"
+                                           .format(**pronouns))
+            return
+        # set pronouns
         they_str = they if isinstance(they, str) else they.name.lower()
         # all pronouns
         if themself is not None:
@@ -88,6 +96,7 @@ class Preferences(commands.Cog):
                         raise MissingRequiredArgument(param)
                 raise MissingRequiredArgument(inspect.signature(Preferences.pronouns.callback).parameters["themself"])
             else:
+                # is valid pronoun
                 if not isinstance(they, Pronoun):
                     raise BadArgument("Pronoun \"{}\" is not a valid preset.".format(they))
                 pronouns = they.value
