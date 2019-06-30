@@ -1,5 +1,7 @@
 import json
+from enum import Enum
 from json import JSONDecodeError, JSONEncoder, JSONDecoder
+from typing import List
 
 
 class PreferencesEncoder(JSONEncoder):
@@ -19,10 +21,27 @@ class PreferencesDecoder(JSONDecoder):
         return obj
 
 
+class TextDecoder(JSONDecoder):
+    def decode(self, s, _w=json.decoder.WHITESPACE.match):
+        obj: List[dict] = super().decode(s, _w)
+        for text in obj:
+            if "tags" not in text:
+                text["tags"] = set()
+            text["tags"] = set(text["tags"])
+        return obj
+
+
+class BubbleEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Enum):
+            return obj.value
+        return super().default(obj)
+
+
 with open("config.json", "r") as config_json:
     config = json.load(config_json)
 with open("TrappingText.json", "r") as trapping_text_json:
-    trapping_text = json.load(trapping_text_json)
+    trapping_text = json.load(trapping_text_json, cls=TextDecoder)
 try:
     with open("TrappedUsers.json", "r") as trapped_users_json:
         trapped_users = json.load(trapped_users_json)

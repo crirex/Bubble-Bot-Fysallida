@@ -1,17 +1,93 @@
 import inspect
 
 from discord.ext import commands
-from discord.ext.commands import Context, BadUnionArgument
+from discord.ext.commands import Context, BadUnionArgument, BadArgument
 from discord.utils import find
 import discord
 from discord import Member, User
 from globals import *
-from jsons import dump_json, trapped_users_json
+from jsons import dump_json, trapped_users_json, BubbleEncoder
 import random
 import time
 import typing
+from enum import Enum
 from formatter import formatter, import_pronouns
 from .prefs import get_user_prefs
+
+
+class BubbleEnum(Enum):
+    # allow for discord.py to convert a string to this enum
+    # noinspection PyUnusedLocal
+    @classmethod
+    async def convert(cls, ctx, argument: str):
+        return cls[argument.upper()]
+
+    @classmethod
+    def random(cls):
+        return random.choice(cls)
+
+
+class BubbleColor(BubbleEnum):
+    ORANGE = "orange"
+    BLUE = "blue"
+    GREEN = "green"
+    RED = "red"
+    YELLOW = "yellow"
+    WHITE = "white"
+    PINK = "pink"
+    PURPLE = "purple"
+    TEAL = "teal"
+    BLACK = "black"
+
+
+class BubbleType(BubbleEnum):
+    SOAP = "soap"
+    RUBBER = "rubber"
+    GUM = "gum"
+    PLASTIC = "plastic"
+    GLASS = "glass"
+    MAGIC = "magic"
+
+
+# TODO tags
+class BubbleTag(BubbleEnum):
+    pass
+
+
+class BubblePlay(BubbleEnum):
+    TRAP = "trap"
+    SQUISH = "squish"
+    SIT = "sit"
+
+
+def get_filtered_possibility(blacklist: typing.Set[str],
+                             play_type: BubblePlay = None,
+                             bubble_type: BubbleType = None,
+                             bubble_tags: typing.Set[BubbleTag] = frozenset()
+                             ) -> (str, bool):
+    if play_type in blacklist:
+        return "Sorry, {they} {doesn't|v|don't} like to play like that.", False
+    play_types = set([p.value for p in BubblePlay]).difference(blacklist) \
+        if play_type is None else {play_type.value}
+
+    if bubble_type in blacklist:
+        return "Sorry, {they} {doesn't|v|don't} like that kind of bubble.", False
+    bubble_types = set([t.value for t in BubbleType]).difference(blacklist) \
+        if bubble_type is None else {bubble_type.value}
+
+    if blacklist.intersection([t.value for t in bubble_tags]):
+        return "Sorry, {they} {doesn't|v|don't} like that kind of bubble.", False
+
+    possibilities = list(
+        filter(lambda text: text["play_type"] in play_types and text["bubble_type"] in bubble_types
+               and text["tags"].issuperset([t.value for t in bubble_tags])
+               and not blacklist.intersection(text["tags"]), trapping_text)
+    )
+
+    if not possibilities:
+        return "It seems like I couldn't find anything to do.", False
+
+    return str(random.choice(possibilities)["text"]), True
 
 
 def get_trapped_user(user_id: int):
@@ -35,6 +111,19 @@ def get_all_members(ctx: Context):
                        members))
 
 
+def save_trapped_users():
+    dump_json(trapped_users, trapped_users_json, cls=BubbleEncoder)
+
+
+# noinspection PyPep8Naming
+class me(commands.Converter):
+    async def convert(self, ctx: Context, argument: str) -> typing.Union[Member, User]:
+        if argument.lower() == "me":
+            return ctx.author
+        else:
+            raise BadArgument("\"{}\" could not be recognized as a valid self keyword.".format(argument))
+
+
 class Bubbles(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -46,11 +135,8 @@ class Bubbles(commands.Cog):
                       aliases=['putInABubble', 'putInBubble'],
                       pass_context=True)
     async def bubble(self, ctx: Context,
-                     user: typing.Union[Member, User, str],
-                     bubble_type='#',
-                     color_type='#',
-                     seconds_trapped: int = maximum_bubble_time,
-                     play_type='#',
+                     user: typing.Union[Member, User, me],
+                     *tags: typing.Union[BubbleType, BubbleColor, BubblePlay, BubbleTag, int],
                      ):
         author = ctx.author
         if user is None:
@@ -59,12 +145,12 @@ class Bubbles(commands.Cog):
                 await ctx.message.channel.send("No eligible member has been found.")
                 return
             user = random.choice(all_users)
-        if isinstance(user, str):
-            if user == "me":
-                user = author
-            else:
-                raise BadUnionArgument(inspect.signature(Bubbles.bubble.callback).parameters["user"],
-                                       (Member, User), [])
+        bubble_type: BubbleType = find(lambda t: isinstance(t, BubbleType), tags)
+        color_type: BubbleColor = find(lambda t: isinstance(t, BubbleColor), tags)
+        play_type: BubblePlay = find(lambda t: isinstance(t, BubblePlay), tags)
+        bubble_tags: typing.Set[BubbleTag] = set(filter(lambda t: isinstance(t, BubbleTag), tags))
+        seconds_trapped: int = find(lambda t: isinstance(t, int), tags)
+        seconds_trapped = seconds_trapped if seconds_trapped is not None else maximum_bubble_time
 
         author_prefs = get_user_prefs(author.id)
         author_mention: str = author.mention if author_prefs["ping"] else author.display_name
@@ -82,39 +168,23 @@ class Bubbles(commands.Cog):
                 "You could get {them} out of the bubble if you want to.",
                 [], kwargs))
             return
-        if (user_mention.lower() == "pop") or (user_mention.lower() == "release"):
-            user_mention = bubble_type
-            print(user_mention)
-            await ctx.message.channel.send(formatter.vformat(
-                "{author}, you need to use the \"+pop @name\" command",
-                [], kwargs))
-            return
-
-        if color_type == '#':
-            color_type = get_random_color()
-
-        if bubble_type == '#':
-            bubble_type = get_random_bubble_type()
-
-        color_type = color_type.lower()
-        play_type = play_type.lower()
-        bubble_type = bubble_type.lower()
 
         seconds_trapped = maximum_bubble_time - seconds_trapped
-        response: str = get_filtered_possibility(play_type, bubble_type)
+        response, success = get_filtered_possibility(user_prefs["blacklist"], play_type, bubble_type, bubble_tags)
         channel = ctx.message.channel
-        trapped_users.append({
-            "user": user.id,
-            "bubble_type": bubble_type,
-            "bubble_color": color_type,
-            "time": time.time() - seconds_trapped,
-            "channel": channel.id,
-            "tries": 0
-        })
-        dump_json(trapped_users, trapped_users_json)
+        if success:
+            trapped_users.append({
+                "user": user.id,
+                "bubble_type": bubble_type.value,
+                "bubble_color": color_type.value,
+                "time": time.time() - seconds_trapped,
+                "channel": channel.id,
+                "tries": 0
+            })
+            save_trapped_users()
         kwargs.update({
-            "type": bubble_type,
-            "color": color_type,
+            "type": bubble_type.value,
+            "color": color_type.value,
         })
         await ctx.message.channel.send(formatter.vformat(response, [], kwargs))
 
@@ -200,4 +270,4 @@ class Bubbles(commands.Cog):
                     [], kwargs))
 
         if update:
-            dump_json(trapped_users, trapped_users_json)
+            save_trapped_users()
