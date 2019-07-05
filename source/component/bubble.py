@@ -63,31 +63,42 @@ class BubblePlay(BubbleEnum):
 def get_filtered_possibility(blacklist: typing.Set[str],
                              play_type: BubblePlay = None,
                              bubble_type: BubbleType = None,
+                             bubble_color: BubbleColor = None,
                              bubble_tags: typing.Set[BubbleTag] = frozenset()
-                             ) -> (str, bool):
+                             ) -> (str, bool, BubblePlay, BubbleType):
     if play_type in blacklist:
-        return "Sorry, {they} {doesn't|v|don't} like to play like that.", False
-    play_types = set([p.value for p in BubblePlay]).difference(blacklist) \
-        if play_type is None else {play_type.value}
+        return "Sorry, {they} {doesn't|v|don't} like to play like that.", False, None, None, None
+    # noinspection PyTypeChecker
+    play_types = {p.value for p in BubblePlay}.difference(blacklist) if play_type is None else {play_type.value}
 
     if bubble_type in blacklist:
-        return "Sorry, {they} {doesn't|v|don't} like that kind of bubble.", False
-    bubble_types = set([t.value for t in BubbleType]).difference(blacklist) \
-        if bubble_type is None else {bubble_type.value}
+        return "Sorry, {they} {doesn't|v|don't} like that kind of bubble.", False, None, None, None
+    # noinspection PyTypeChecker
+    bubble_types = {t.value for t in BubbleType}.difference(blacklist) if bubble_type is None else {bubble_type.value}
+
+    if bubble_color in blacklist:
+        return "Sorry, {they} {doesn't|v|don't} like that kind of bubble.", False, None, None, None
+    # noinspection PyTypeChecker
+    bubble_colors = {c.value for c in BubbleColor}.difference(blacklist) if bubble_color is None else {bubble_color}
+    b_color = random.choice(list(bubble_colors))
 
     if blacklist.intersection([t.value for t in bubble_tags]):
-        return "Sorry, {they} {doesn't|v|don't} like that kind of bubble.", False
+        return "Sorry, {they} {doesn't|v|don't} like that kind of bubble.", False, None, None, None
 
     possibilities = list(
         filter(lambda text: text["play_type"] in play_types and text["bubble_type"] in bubble_types
-               and text["tags"].issuperset([t.value for t in bubble_tags])
-               and not blacklist.intersection(text["tags"]), trapping_text)
+               # TODO set & geq
+               and text["tags"] >= {t.value for t in bubble_tags}
+               and not text["tags"].intersection(blacklist),
+
+               trapping_text)
     )
 
     if not possibilities:
-        return "It seems like I couldn't find anything to do.", False
+        return "It seems like I couldn't find anything to do.", False, None, None, None
 
-    return str(random.choice(possibilities)["text"]), True
+    choice = random.choice(possibilities)
+    return str(choice["text"]), True, choice["play_type"], choice["bubble_type"], b_color
 
 
 def get_trapped_user(user_id: int):
@@ -170,22 +181,24 @@ class Bubbles(commands.Cog):
             return
 
         seconds_trapped = maximum_bubble_time - seconds_trapped
-        response, success = get_filtered_possibility(user_prefs["blacklist"], play_type, bubble_type, bubble_tags)
+        response, success, b_play, b_type, b_color = \
+            get_filtered_possibility(user_prefs["blacklist"], play_type, bubble_type, color_type, bubble_tags)
         channel = ctx.message.channel
         if success:
             trapped_users.append({
                 "user": user.id,
-                "bubble_type": bubble_type.value,
-                "bubble_color": color_type.value,
+                "bubble_play": b_play,
+                "bubble_type": b_type,
+                "bubble_color": b_color,
                 "time": time.time() - seconds_trapped,
                 "channel": channel.id,
                 "tries": 0
             })
             save_trapped_users()
-        kwargs.update({
-            "type": bubble_type.value,
-            "color": color_type.value,
-        })
+            kwargs.update({
+                "type": b_type,
+                "color": b_color,
+            })
         await ctx.message.channel.send(formatter.vformat(response, [], kwargs))
 
     # Free yourself or someone else someone from a bubble
