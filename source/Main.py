@@ -1,19 +1,21 @@
 #!/usr/bin/python3.6
 # Work with Python 3.6
 import asyncio
-from discord import Game, Message
+
+from discord import Game, Message, TextChannel
 from discord.ext.commands import Bot
+
 from component import *
 from jsons import trapped_users_json
 
-client: Bot = Bot(command_prefix=config["prefix"])
+client: Bot = Bot(command_prefix=config.prefix)
 
 
 # Closes the bot. Can only be used by me.
 @client.command(name='logout',
                 pass_context=True)
 async def logout(ctx):
-    if ctx.message.author.id == config["owner"]:
+    if ctx.message.author.id == config.owner:
         print("Logging out")
         await client.logout()
         # nothing past here is executed
@@ -86,12 +88,16 @@ async def verify_pop():
     await client.wait_until_ready()
     while not client.is_closed:
         for trapped_user in trapped_users:
-            if time.time() - trapped_user["time"] > maximum_bubble_time:
-                await client.get_channel(trapped_user["channel"]).send(
-                    "After some time the {2} {1} bubble fails to hold it "
-                    "composure and pops freeing {0}. ".format(trapped_user["user_mention"],
-                                                              trapped_user["bubble_type"],
-                                                              trapped_user["bubble_color"]))
+            if time.time() - trapped_user.time > maximum_bubble_time:
+                channel = client.get_channel(trapped_user.channel)
+                user = channel.guild.get_member(trapped_user.user) if isinstance(channel, TextChannel)\
+                    else client.get_user(trapped_user.user)
+                await client.get_channel(trapped_user.channel).send(
+                    "After some time the {2} {1} bubble fails to hold its "
+                    "composure and pops freeing {0}. "
+                    .format(user.mention if get_user_prefs(user.id).ping else user.display_name,
+                            trapped_user.bubble_type,
+                            trapped_user.bubble_color))
                 trapped_users.remove(trapped_user)
                 dump_json(trapped_users, trapped_users_json)
         await asyncio.sleep(5)
@@ -104,4 +110,4 @@ if __name__ == "__main__":
     client.add_cog(Voice(client))
     client.loop.create_task(list_servers())
     client.loop.create_task(verify_pop())
-    client.run(config["token"])
+    client.run(config.token)

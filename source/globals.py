@@ -1,4 +1,5 @@
 import time
+
 # noinspection PyUnresolvedReferences
 from jsons import config, trapping_text, trapped_users, user_preferences
 
