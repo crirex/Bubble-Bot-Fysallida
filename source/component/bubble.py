@@ -1,11 +1,11 @@
 import random
 from typing import Set, Union, List, Optional
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import Context, BadArgument
 from discord.utils import find
 import discord
-from discord import Member, User
+from discord import Member, User, TextChannel
 
 from globals import *
 from btypes import *
@@ -70,7 +70,7 @@ def get_all_members(ctx: Context) -> Union[List[Member], List[User]]:
                        all([
                            not member.bot,
                            member.status == discord.Status.online or member.status == discord.Status.idle,
-                           not is_trapped(member.mention)
+                           not is_trapped(member.id)
                        ]),
                        members))
 
@@ -231,3 +231,24 @@ class Bubbles(commands.Cog):
 
         if update:
             save_trapped_users()
+
+    # noinspection PyCallingNonCallable
+    @tasks.loop(seconds=5)
+    async def verify_pop(self):
+        for trapped_user in trapped_users:
+            if time.time() - trapped_user.time > maximum_bubble_time:
+                channel = self.bot.get_channel(trapped_user.channel)
+                user = channel.guild.get_member(trapped_user.user) if isinstance(channel, TextChannel)\
+                    else self.bot.get_user(trapped_user.user)
+                await channel.send(
+                    "After some time the {2} {1} bubble fails to hold its "
+                    "composure and pops freeing {0}. "
+                    .format(user.mention if get_user_prefs(user.id).ping else user.display_name,
+                            trapped_user.bubble_type,
+                            trapped_user.bubble_color))
+                trapped_users.remove(trapped_user)
+                save_trapped_users()
+
+    @verify_pop.before_loop
+    async def verify_pop_before(self):
+        await self.bot.wait_until_ready()

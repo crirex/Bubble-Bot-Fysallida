@@ -1,4 +1,5 @@
-from .help import *
-from .bubble import *
-from .voice import *
-from .prefs import *
+from .help import Help
+from .bubble import Bubbles
+from .voice import Voice
+from .prefs import Preferences, get_user_prefs
+from .background import Background

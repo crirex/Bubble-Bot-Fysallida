@@ -89,7 +89,7 @@ class BubbleTrap:
                  bubble_play: Union[BubblePlay, str],
                  bubble_type: Union[BubbleType, str],
                  bubble_color: Union[BubbleColor, str],
-                 time: int, channel: int, tries: int
+                 time: float, channel: int, tries: int
                  ):
         self.user = user
         self.bubble_play: BubblePlay =\
