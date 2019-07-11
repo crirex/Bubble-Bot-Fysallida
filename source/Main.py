@@ -67,4 +67,5 @@ if __name__ == "__main__":
     client.add_cog(Preferences(client))
     client.add_cog(Voice(client))
     client.add_cog(Background(client))
+    client.add_cog(Time(client))
     client.run(config.token)
