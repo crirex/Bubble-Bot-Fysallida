@@ -69,4 +69,6 @@ class Time(commands.Cog):
             options = get_all_available_timezones()
         else:
             options = search_for_timezone(argument)
-        await ctx.message.channel.send(print(', '.join(options)))
+
+        for chunk in [options[i:i + 80] for i in range(0, len(options), 80)]:
+            await ctx.message.author.send('===========\n' + ', '.join(chunk))
