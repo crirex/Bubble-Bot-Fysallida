@@ -1,6 +1,20 @@
-from discord.ext import commands
 from datetime import datetime
 from pytz import timezone, all_timezones_set, utc
+
+from typing import Union
+
+from discord.ext import commands
+from discord.ext.commands import Context
+from discord import Member, User, TextChannel
+
+
+# noinspection PyPep8Naming
+class me(commands.Converter):
+    async def convert(self, ctx: Context, argument: str) -> Union[Member, User]:
+        if argument.lower() == "me":
+            return ctx.author
+        else:
+            raise BadArgument("\"{}\" could not be recognized as a valid self keyword.".format(argument))
 
 
 def get_time_by_country(country: str):
@@ -32,7 +46,6 @@ class Time(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # Joins the voice channels of the person that used the command
     @commands.command(name='time',
                       pass_context=True)
     async def show_time(self, ctx, user: Union[Member, User, me, None]):
