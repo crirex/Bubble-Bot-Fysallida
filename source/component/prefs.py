@@ -1,34 +1,42 @@
+import copy
 import typing
 import inspect
 import itertools
-from enum import Enum
 
 from discord.ext import commands
-from discord.ext.commands import Context, MissingRequiredArgument, BadArgument
+from discord.ext.commands import Context, MissingRequiredArgument, BadArgument, Bot
 
 from globals import *
-from jsons import dump_json, user_preferences_json, Encoder
+from jsons import Writeback
 from btypes import *
 
 
-def get_user_prefs(user_id: typing.Union[int, str]) -> UserPreferences:
-    user_id = str(user_id)
-    if user_id not in user_preferences:
-        user_preferences[user_id] = UserPreferences()
-    return user_preferences[user_id]
-
-
-def set_user_prefs(user_id: typing.Union[int, str], prefs: UserPreferences):
-    user_preferences[str(user_id)] = prefs
-
-
-def save_user_prefs():
-    dump_json(user_preferences, user_preferences_json, cls=Encoder)
-
-
 class Preferences(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
+        self.wb: Writeback = self.bot.get_cog("Writeback")
+        self.prefs_lock = self.wb.prefs_lock
+
+    # Do not use without lock
+    @staticmethod
+    def _get_user_prefs(user_id: typing.Union[int, str]) -> UserPreferences:
+        user_id = str(user_id)
+        if user_id not in user_preferences:
+            return UserPreferences()
+        return copy.deepcopy(user_preferences[user_id])
+
+    # Do not use without lock
+    @staticmethod
+    def _set_user_prefs(user_id: typing.Union[int, str], prefs: UserPreferences):
+        user_preferences[str(user_id)] = prefs
+
+    async def get_user_prefs(self, user_id: typing.Union[int, str]) -> UserPreferences:
+        async with self.prefs_lock:
+            return self._get_user_prefs(user_id)
+
+    async def set_user_prefs(self, user_id: typing.Union[int, str], prefs: UserPreferences):
+        async with self.prefs_lock:
+            self._set_user_prefs(user_id, prefs)
 
     @commands.group(name="prefs", invoke_without_command=True)
     async def preferences(self, ctx: Context):
@@ -40,7 +48,7 @@ class Preferences(commands.Cog):
                        them: str = None, their: str = None, theirs: str = None, themself: str = None):
         # display pronouns
         if they is None:
-            pronouns = get_user_prefs(ctx.author.id).pronouns
+            pronouns = (await self.get_user_prefs(ctx.author.id)).pronouns
             await ctx.message.channel.send("Pronouns: {they}/{them}/{their}/{theirs}/{themself}"
                                            .format(**pronouns))
             return
@@ -70,15 +78,16 @@ class Preferences(commands.Cog):
                 if not isinstance(they, Pronoun):
                     raise BadArgument("Pronoun \"{}\" is not a valid preset.".format(they))
                 pronouns = they.value
-        prefs = get_user_prefs(ctx.author.id)
-        prefs.pronouns = pronouns
-        set_user_prefs(ctx.author.id, prefs)
-        save_user_prefs()
+        async with self.prefs_lock:
+            prefs = self._get_user_prefs(ctx.author.id)
+            prefs.pronouns = pronouns
+            self._set_user_prefs(ctx.author.id, prefs)
+            self.wb.sync_user_preferences()
         await ctx.message.channel.send("Preferences updated.")
 
     @preferences.group(invoke_without_command=True)
     async def blacklist(self, ctx: Context):
-        prefs = get_user_prefs(ctx.author.id)
+        prefs = await self.get_user_prefs(ctx.author.id)
         tags: typing.Set[str] = prefs.pronouns
         blacklist: str = ", ".join(sorted(tags))
         if blacklist == "":
@@ -88,29 +97,32 @@ class Preferences(commands.Cog):
 
     @blacklist.command(name="add")
     async def blacklist_add(self, ctx: Context, *args: str):
-        prefs = get_user_prefs(ctx.author.id)
-        tags: typing.Set[str] = prefs.blacklist
-        tags.update(args)
-        set_user_prefs(ctx.author.id, prefs)
-        save_user_prefs()
+        async with self.prefs_lock:
+            prefs = self._get_user_prefs(ctx.author.id)
+            tags: typing.Set[str] = prefs.blacklist
+            tags.update(args)
+            self._set_user_prefs(ctx.author.id, prefs)
+            self.wb.sync_user_preferences()
         await ctx.message.channel.send("Preferences updated.")
 
     @blacklist.command(name="remove")
     async def blacklist_remove(self, ctx: Context, *args: str):
-        prefs = get_user_prefs(ctx.author.id)
-        tags: typing.Set[str] = prefs.blacklist
-        tags.difference_update(args)
-        set_user_prefs(ctx.author.id, prefs)
-        save_user_prefs()
+        async with self.prefs_lock:
+            prefs = self._get_user_prefs(ctx.author.id)
+            tags: typing.Set[str] = prefs.blacklist
+            tags.difference_update(args)
+            self._set_user_prefs(ctx.author.id, prefs)
+            self.wb.sync_user_preferences()
         await ctx.message.channel.send("Preferences updated.")
 
     @preferences.command()
     async def ping(self, ctx: Context, can_ping: bool = None):
-        prefs = get_user_prefs(ctx.author.id)
+        prefs = await self.get_user_prefs(ctx.author.id)
         if can_ping is None:
             await ctx.message.channel.send("Will ping: {}".format(str(prefs.ping).lower()))
         else:
-            prefs.ping = can_ping
-            set_user_prefs(ctx.author.id, prefs)
-            save_user_prefs()
+            async with self.prefs_lock:
+                prefs.ping = can_ping
+                self._set_user_prefs(ctx.author.id, prefs)
+                self.wb.sync_user_preferences()
             await ctx.message.channel.send("Preferences updated.")

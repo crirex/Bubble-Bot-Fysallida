@@ -2,16 +2,16 @@ import random
 from typing import Set, Union, List, Optional
 
 from discord.ext import commands, tasks
-from discord.ext.commands import Context, BadArgument
+from discord.ext.commands import Context, BadArgument, Bot
 from discord.utils import find
 import discord
 from discord import Member, User, TextChannel
 
+from .prefs import Preferences
 from globals import *
 from btypes import *
-from jsons import dump_json, trapped_users_json, Encoder
+from jsons import Writeback
 from formatter import formatter, import_pronouns
-from .prefs import get_user_prefs
 
 
 def get_filtered_possibility(blacklist: Set[Union[BubblePlay, BubbleType, BubbleColor, BubbleTag]],
@@ -54,31 +54,6 @@ def get_filtered_possibility(blacklist: Set[Union[BubblePlay, BubbleType, Bubble
     return choice.text, True, choice.play_type, choice.bubble_type, b_color
 
 
-def get_trapped_user(user_id: int) -> BubbleTrap:
-    return find(lambda trap: trap.user == user_id, trapped_users)
-
-
-def is_trapped(user_id: int) -> bool:
-    return get_trapped_user(user_id) is not None
-
-
-def get_all_members(ctx: Context) -> Union[List[Member], List[User]]:
-    if isinstance(ctx.channel, discord.DMChannel):
-        return [ctx.author]
-    members = ctx.channel.recipients if isinstance(ctx.channel, discord.GroupChannel) else ctx.channel.members
-    return list(filter(lambda member:
-                       all([
-                           not member.bot,
-                           member.status == discord.Status.online or member.status == discord.Status.idle,
-                           not is_trapped(member.id)
-                       ]),
-                       members))
-
-
-def save_trapped_users():
-    dump_json(trapped_users, trapped_users_json, cls=Encoder)
-
-
 # noinspection PyPep8Naming
 class me(commands.Converter):
     async def convert(self, ctx: Context, argument: str) -> Union[Member, User]:
@@ -89,8 +64,56 @@ class me(commands.Converter):
 
 
 class Bubbles(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
+        self.wb: Writeback = self.bot.get_cog("Writeback")
+        self.trapped_lock = self.wb.trapped_lock
+        self.preferences: Preferences = self.bot.get_cog("Preferences")
+        self.verify_pop.start()
+
+    def cog_unload(self):
+        self.verify_pop.cancel()
+
+    # Do not use without lock
+    @staticmethod
+    def _get_trapped_user(user_id: int) -> BubbleTrap:
+        return find(lambda trap: trap.user == user_id, trapped_users)
+
+    # Do not use without lock
+    @staticmethod
+    def _is_trapped(user_id: int) -> bool:
+        return Bubbles._get_trapped_user(user_id) is not None
+
+    # Do not use without lock
+    @staticmethod
+    def _get_all_members(ctx: Context) -> Union[List[Member], List[User]]:
+        if isinstance(ctx.channel, discord.DMChannel):
+            return [ctx.author]
+        members = ctx.channel.recipients if isinstance(ctx.channel, discord.GroupChannel) else ctx.channel.members
+        return list(filter(lambda member:
+                           all([
+                               not member.bot,
+                               member.status == discord.Status.online or member.status == discord.Status.idle,
+                               not Bubbles._is_trapped(member.id)
+                           ]),
+                           members))
+
+    async def get_trapped_user(self, user_id: int) -> BubbleTrap:
+        async with self.trapped_lock:
+            return self._get_trapped_user(user_id)
+
+    async def is_trapped(self, user_id: int) -> bool:
+        async with self.trapped_lock:
+            return self._is_trapped(user_id)
+
+    async def get_all_members(self, ctx: Context) -> Union[List[Member], List[User]]:
+        async with self.wb.trapped_lock:
+            return self._get_all_members(ctx)
+
+    async def trap_user(self, trap: BubbleTrap):
+        async with self.wb.trapped_lock:
+            trapped_users.append(trap)
+            self.wb.sync_trapped_users()
 
     # Puts someone in a bubble
     @commands.command(name='bubble',
@@ -104,7 +127,7 @@ class Bubbles(commands.Cog):
                      ):
         author = ctx.author
         if user is None:
-            all_users = get_all_members(ctx)
+            all_users = await self.get_all_members(ctx)
             if not all_users:
                 await ctx.message.channel.send("No eligible member has been found.")
                 return
@@ -116,9 +139,9 @@ class Bubbles(commands.Cog):
         seconds_trapped: int = find(lambda t: isinstance(t, int), tags)
         seconds_trapped = seconds_trapped if seconds_trapped is not None else maximum_bubble_time
 
-        author_prefs = get_user_prefs(author.id)
+        author_prefs = await self.preferences.get_user_prefs(author.id)
         author_mention: str = author.mention if author_prefs.ping else author.display_name
-        user_prefs = get_user_prefs(user.id)
+        user_prefs = await self.preferences.get_user_prefs(user.id)
         user_mention: str = user.mention if user_prefs.ping else user.display_name
         kwargs = {
             "user": user_mention,
@@ -126,7 +149,7 @@ class Bubbles(commands.Cog):
         }
         import_pronouns(kwargs, user_prefs.pronouns, author_prefs.pronouns)
 
-        if is_trapped(user.id):
+        if await self.is_trapped(user.id):
             await ctx.message.channel.send(formatter.vformat(
                 "{user} is already trapped in a bubble and cannot be put in another one right now. "
                 "You could get {them} out of the bubble if you want to.",
@@ -138,7 +161,7 @@ class Bubbles(commands.Cog):
             get_filtered_possibility(user_prefs.blacklist, play_type, bubble_type, color_type, bubble_tags)
         channel = ctx.message.channel
         if success:
-            trapped_users.append(BubbleTrap(**{
+            await self.trap_user(BubbleTrap(**{
                 "user": user.id,
                 "bubble_play": b_play,
                 "bubble_type": b_type,
@@ -147,7 +170,6 @@ class Bubbles(commands.Cog):
                 "channel": channel.id,
                 "tries": 0
             }))
-            save_trapped_users()
             kwargs.update({
                 "type": b_type.value,
                 "color": b_color.value,
@@ -164,9 +186,9 @@ class Bubbles(commands.Cog):
         author = ctx.author
         if user is None:
             user = ctx.message.author
-        author_prefs = get_user_prefs(author.id)
+        author_prefs = await self.preferences.get_user_prefs(author.id)
         author_mention: str = author.mention if author_prefs.ping else author.display_name
-        user_prefs = get_user_prefs(user.id)
+        user_prefs = await self.preferences.get_user_prefs(user.id)
         user_mention: str = user.mention if user_prefs.ping else user.display_name
         kwargs = {
             "user": user_mention,
@@ -174,80 +196,76 @@ class Bubbles(commands.Cog):
         }
         import_pronouns(kwargs, user_prefs.pronouns, author_prefs.pronouns)
 
-        update = False
-
-        if is_trapped(author.id):
+        if await self.is_trapped(author.id):
             if author.id != user.id:
                 await ctx.message.channel.send(formatter.vformat(
                     "{author} is inside a bubble and is unable to pop anyone else's bubble because of that. "
                     "{their!c} actions being limited to the confines of the bubble.",
                     [], kwargs))
             else:
-                current_user = get_trapped_user(author.id)
-                current_user.tries += 1
-                kwargs.update({
-                    "type": current_user.bubble_type.value,
-                    "color": current_user.bubble_color.value,
-                })
-                if current_user.tries >= maximum_number_of_popping_times:
-                    responses = [
-                        "The {color} {type} bubble in which {user} was in just pops after so many tries to escape "
-                        "and {they} {'is|v|are'} now free. "
-                        "(Maybe there was some unknown force that let {them} free)",
-                        "I reach out and touch {user}'s {color} {type} bubble in which "
-                        "{they} {'was|v|were'} trapped in, after which it pops and {they} {'is|v|are'} now free."]
+                async with self.trapped_lock:
+                    current_user = self._get_trapped_user(author.id)
+                    current_user.tries += 1
+                    kwargs.update({
+                        "type": current_user.bubble_type.value,
+                        "color": current_user.bubble_color.value,
+                    })
+                    if current_user.tries >= maximum_number_of_popping_times:
+                        responses = [
+                            "The {color} {type} bubble in which {user} was in just pops after so many tries to escape "
+                            "and {they} {'is|v|are'} now free. "
+                            "(Maybe there was some unknown force that let {them} free)",
+                            "I reach out and touch {user}'s {color} {type} bubble in which "
+                            "{they} {'was|v|were'} trapped in, after which it pops and {they} {'is|v|are'} now free."]
 
-                    await ctx.message.channel.send(formatter.vformat(random.choice(responses), [], kwargs))
-                    trapped_users.remove(current_user)
-                    update = True
-                else:
-                    response = "{user!c} tries to pop the bubble but only manages to stretch it, " \
-                               "seeing how resilient it is and unable to pop it. " \
-                               "Only someone else may pop it or it will pop by itself after some time. "
-                    if current_user.tries >= maximum_number_of_popping_times - 1:
-                        response += "The bubble seems to have lost some of its resistance after " \
-                                    "so many attempts to free yourself."
+                        await ctx.message.channel.send(formatter.vformat(random.choice(responses), [], kwargs))
+                        trapped_users.remove(current_user)
+                    else:
+                        response = "{user!c} tries to pop the bubble but only manages to stretch it, " \
+                                   "seeing how resilient it is and unable to pop it. " \
+                                   "Only someone else may pop it or it will pop by itself after some time. "
+                        if current_user.tries >= maximum_number_of_popping_times - 1:
+                            response += "The bubble seems to have lost some of its resistance after " \
+                                        "so many attempts to free yourself."
 
-                    await ctx.message.channel.send(formatter.vformat(response, [], kwargs))
-                    update = True
+                        await ctx.message.channel.send(formatter.vformat(response, [], kwargs))
+                    self.wb.sync_trapped_users()
         else:
-            if is_trapped(user.id):
-                current_user = get_trapped_user(user.id)
-                kwargs.update({
-                    "type": current_user.bubble_type.value,
-                    "color": current_user.bubble_color.value,
-                })
-                await ctx.message.channel.send(formatter.vformat(
-                    "{author!c} pops the {color} {type} bubble in which {user} was just in, freeing {them} "
-                    "from the bubbly, comfy prison",
-                    [], kwargs))
-                trapped_users.remove(current_user)
-                update = True
+            if await self.is_trapped(user.id):
+                async with self.trapped_lock:
+                    current_user = self._get_trapped_user(user.id)
+                    kwargs.update({
+                        "type": current_user.bubble_type.value,
+                        "color": current_user.bubble_color.value,
+                    })
+                    await ctx.message.channel.send(formatter.vformat(
+                        "{author!c} pops the {color} {type} bubble in which {user} was just in, freeing {them} "
+                        "from the bubbly, comfy prison",
+                        [], kwargs))
+                    trapped_users.remove(current_user)
             else:
                 await ctx.message.channel.send(formatter.vformat(
                     "{user!c} isn't trapped in any kind of bubble. "
                     "Maybe {they} {'needs|v|need'} to be in one :3",
                     [], kwargs))
 
-        if update:
-            save_trapped_users()
-
     # noinspection PyCallingNonCallable
     @tasks.loop(seconds=5)
     async def verify_pop(self):
-        for trapped_user in trapped_users:
-            if time.time() - trapped_user.time > maximum_bubble_time:
-                channel = self.bot.get_channel(trapped_user.channel)
-                user = channel.guild.get_member(trapped_user.user) if isinstance(channel, TextChannel)\
-                    else self.bot.get_user(trapped_user.user)
-                await channel.send(
-                    "After some time the {2} {1} bubble fails to hold its "
-                    "composure and pops freeing {0}. "
-                    .format(user.mention if get_user_prefs(user.id).ping else user.display_name,
-                            trapped_user.bubble_type,
-                            trapped_user.bubble_color))
-                trapped_users.remove(trapped_user)
-                save_trapped_users()
+        async with self.trapped_lock, self.preferences.prefs_lock:
+            for trapped_user in trapped_users:
+                if time.time() - trapped_user.time > maximum_bubble_time:
+                    channel = self.bot.get_channel(trapped_user.channel)
+                    user = channel.guild.get_member(trapped_user.user) if isinstance(channel, TextChannel)\
+                        else self.bot.get_user(trapped_user.user)
+                    await channel.send(
+                        "After some time the {2} {1} bubble fails to hold its "
+                        "composure and pops freeing {0}. "
+                        .format(user.mention if self.preferences._get_user_prefs(user.id).ping else user.display_name,
+                                trapped_user.bubble_type,
+                                trapped_user.bubble_color))
+                    trapped_users.remove(trapped_user)
+                    self.wb.sync_trapped_users()
 
     @verify_pop.before_loop
     async def verify_pop_before(self):

@@ -1,6 +1,6 @@
 from .help import Help
 from .bubble import Bubbles
 from .voice import Voice
-from .prefs import Preferences, get_user_prefs
+from .prefs import Preferences
 from .background import Background
 from .time import Time

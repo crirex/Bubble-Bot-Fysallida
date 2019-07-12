@@ -6,6 +6,7 @@ from discord.ext.commands import Bot
 
 from globals import *
 from component import *
+from jsons import Writeback
 
 client: Bot = Bot(command_prefix=config.prefix, owner_id=config.owner)
 
@@ -62,9 +63,10 @@ async def on_ready():
 
 
 if __name__ == "__main__":
+    client.add_cog(Writeback(client))
+    client.add_cog(Preferences(client))
     client.add_cog(Help(client))
     client.add_cog(Bubbles(client))
-    client.add_cog(Preferences(client))
     client.add_cog(Voice(client))
     client.add_cog(Background(client))
     client.add_cog(Time(client))
