@@ -20,10 +20,7 @@ class BubbleEnum(Enum):
     # allow for discord.py to convert a string to this enum
     @classmethod
     def convert_(cls, argument: str):
-        try:
-            return cls[argument.upper()]
-        except KeyError:
-            return None
+        return cls[argument.upper()]
 
     # noinspection PyUnusedLocal
     @classmethod
