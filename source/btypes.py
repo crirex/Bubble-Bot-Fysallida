@@ -134,7 +134,9 @@ class UserPreferences:
     def __init__(self,
                  pronouns: Dict[str, str] = None,
                  blacklist: List[str] = tuple(),
-                 ping: bool = True
+                 ping: bool = True,
+                 tz: str = "",
+                 miltime: bool = True,
                  ):
         self.pronouns = pronouns if pronouns is not None else Pronoun.THEY.value
         black_play: Set[BubblePlay] = {BubblePlay.convert_(value) for value in blacklist}
@@ -148,3 +150,5 @@ class UserPreferences:
         except KeyError:
             pass
         self.ping = ping
+        self.tz = tz
+        self.miltime = miltime

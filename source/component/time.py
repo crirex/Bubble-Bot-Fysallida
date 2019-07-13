@@ -1,74 +1,51 @@
 from datetime import datetime
-from pytz import timezone, all_timezones_set, utc
-
 from typing import Union
 
 from discord.ext import commands
-from discord.ext.commands import Context
-from discord import Member, User, TextChannel
+from discord.ext.commands import Context, Bot
+from discord import Member, User
+
+from btypes import UserPreferences
+from utils import me, get_timezone
+from .prefs import Preferences
 
 
-# noinspection PyPep8Naming
-class me(commands.Converter):
-    async def convert(self, ctx: Context, argument: str) -> Union[Member, User]:
-        if argument.lower() == "me":
-            return ctx.author
-        else:
-            raise BadArgument("\"{}\" could not be recognized as a valid self keyword.".format(argument))
-
-
-def get_time_by_country(country: str):
-    utc_dt = utc.localize(datetime.utcfromtimestamp(int(datetime.now(tz=timezone("UTC")).timestamp())))
-    country_timezone = timezone(country)
-    time_format = '%H:%M:%S'
-    # time_format = '%Y-%m-%d %H:%M:%S %Z%z'  # Use this format for full info
-    time = utc_dt.astimezone(country_timezone)
-    return time.strftime(time_format)
-
-
-def get_all_available_timezones():
-    return list(all_timezones_set)
-
-
-def search_for_timezone(search_argument: str):
-    return [current_timezone for current_timezone in get_all_available_timezones()
-            if search_argument in current_timezone]
-
-
-def is_valid_timezone(zone: str):
-    for current_timezone in get_all_available_timezones():
-        if zone == current_timezone:
-            return True
-    return False
+def time_fmt(prefs: UserPreferences):
+    return "%H:%M" if prefs.miltime else "%I:%M %p"
 
 
 class Time(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
+        self.preferences: Preferences = self.bot.get_cog("Preferences")
 
     @commands.command(name='time',
                       pass_context=True)
-    async def show_time(self, ctx, user: Union[Member, User, me, None]):
-        ''' This should be the general code to be modified and used
+    async def show_time(self, ctx: Context, user: Union[Member, User, me, None]):
         if user is None:
             user = ctx.message.author
-        user_zone = preferences of user
-        await ctx.message.channel.send(get_time_by_country(user_zone))
-        '''
-        # This is the hardcoded version for the both of us only that works with strings
-        # (i don't it too complicated for something hardcoded)
-        await ctx.message.channel.send("Autumn time: " + get_time_by_country('America/New_York') + '\n' +
-                                       "Crirex time: " + get_time_by_country('Europe/Bucharest'))
-
-    # Leaves the voice channel
-    @commands.command(name='searchZones',
-                      pass_context=True,
-                      aliases=['searchzones'])
-    async def show_options(self, ctx, argument=None):
-        if argument is None:
-            options = get_all_available_timezones()
+        user_prefs = await self.preferences.get_user_prefs(user.id)
+        author_prefs = await self.preferences.get_user_prefs(ctx.author.id)
+        if not user_prefs.tz:
+            await ctx.send("User has no timezone set.")
         else:
-            options = search_for_timezone(argument)
+            tz = get_timezone(user_prefs.tz)
+            dt = datetime.now(tz)
+            await ctx.send(dt.strftime(time_fmt(author_prefs)) + " " + tz.tzname(dt))
 
-        for chunk in [options[i:i + 80] for i in range(0, len(options), 80)]:
-            await ctx.message.author.send('===========\n' + ', '.join(chunk))
+    @commands.command(name='time2',
+                      pass_context=True)
+    async def secret_time(self, ctx: Context):
+        """This is the hardcoded version for the both of us only"""
+        author_prefs = await self.preferences.get_user_prefs(ctx.author.id)
+        await ctx.send(
+            "Autumn time: " + datetime.now(get_timezone("America/New_York")).strftime(time_fmt(author_prefs)) + "\n" +
+            "Crirex time: " + datetime.now(get_timezone("Europe/Bucharest")).strftime(time_fmt(author_prefs))
+        )
+
+    # Eventually move into the help command
+    @commands.command(name='zones',
+                      pass_context=True)
+    async def show_zones(self, ctx: Context):
+        await ctx.send("Visit https://askgeo.com/#map and select your location on the map.\n"
+                       "Then scroll down and find the value associated with the key \"TimeZoneId\".")

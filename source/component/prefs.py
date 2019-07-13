@@ -9,6 +9,7 @@ from discord.ext.commands import Context, MissingRequiredArgument, BadArgument, 
 from globals import *
 from jsons import Writeback
 from btypes import *
+from utils import get_timezone
 
 
 class Preferences(commands.Cog):
@@ -123,6 +124,38 @@ class Preferences(commands.Cog):
         else:
             async with self.prefs_lock:
                 prefs.ping = can_ping
+                self._set_user_prefs(ctx.author.id, prefs)
+                self.wb.sync_user_preferences()
+            await ctx.message.channel.send("Preferences updated.")
+
+    @preferences.command()
+    async def timezone(self, ctx: Context, zone: str = None):
+        prefs = await self.get_user_prefs(ctx.author.id)
+        if zone is None:
+            tz = prefs.tz
+            if not tz:
+                await ctx.message.channel.send("No timezone set.")
+                return
+            await ctx.message.channel.send("Timezone: {}".format(tz))
+            return
+        if get_timezone(zone) is None:
+            await ctx.message.channel.send("Invalid timezone.")
+            return
+        async with self.prefs_lock:
+            prefs.tz = zone
+            self._set_user_prefs(ctx.author.id, prefs)
+            self.wb.sync_user_preferences()
+        await ctx.message.channel.send("Preferences updated.")
+
+    @preferences.command(name="miltime",
+                         aliases=['24hr', 'military'])
+    async def miltime(self, ctx: Context, miltime: bool = None):
+        prefs = await self.get_user_prefs(ctx.author.id)
+        if miltime is None:
+            await ctx.message.channel.send("24-Hour Clock: {}".format(str(prefs.miltime).lower()))
+        else:
+            async with self.prefs_lock:
+                prefs.miltime = miltime
                 self._set_user_prefs(ctx.author.id, prefs)
                 self.wb.sync_user_preferences()
             await ctx.message.channel.send("Preferences updated.")
