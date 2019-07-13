@@ -2,7 +2,7 @@ import random
 from typing import Set, Union, List, Optional
 
 from discord.ext import commands, tasks
-from discord.ext.commands import Context, BadArgument, Bot
+from discord.ext.commands import Context, Bot
 from discord.utils import find
 import discord
 from discord import Member, User, TextChannel
@@ -10,6 +10,7 @@ from discord import Member, User, TextChannel
 from .prefs import Preferences
 from globals import *
 from btypes import *
+from utils import me
 from jsons import Writeback
 from formatter import formatter, import_pronouns
 
@@ -52,15 +53,6 @@ def get_filtered_possibility(blacklist: Set[Union[BubblePlay, BubbleType, Bubble
 
     choice: TrappingText = random.choice(possibilities)
     return choice.text, True, choice.play_type, choice.bubble_type, b_color
-
-
-# noinspection PyPep8Naming
-class me(commands.Converter):
-    async def convert(self, ctx: Context, argument: str) -> Union[Member, User]:
-        if argument.lower() == "me":
-            return ctx.author
-        else:
-            raise BadArgument("\"{}\" could not be recognized as a valid self keyword.".format(argument))
 
 
 class Bubbles(commands.Cog):
