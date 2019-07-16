@@ -56,7 +56,6 @@ async def on_message(message: Message):
 @client.event
 async def on_ready():
     await client.change_presence(activity=Game(name="with bubbles."))
-    refresh_video_list()
 
     print('Logged in as')
     print(client.user.name)
@@ -72,5 +71,5 @@ if __name__ == "__main__":
     client.add_cog(Voice(client))
     client.add_cog(Background(client))
     client.add_cog(Time(client))
-    client.add_cog(Media(client))
+    client.add_cog(Videos(client))
     client.run(config.token)
