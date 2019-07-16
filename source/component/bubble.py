@@ -8,7 +8,7 @@ import discord
 from discord import Member, User, TextChannel
 
 from .prefs import Preferences
-from globals import start_time, maximum_bubble_time, maximum_number_of_popping_times
+from globals import *
 from btypes import *
 from utils import me
 from jsons import Writeback
