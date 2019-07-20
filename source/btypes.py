@@ -66,11 +66,15 @@ class BubbleTag(BubbleEnum):
 
 
 class Config:
-    def __init__(self, token: str, prefix: str, owner: int, yt_key: str):
+    def __init__(self, token: str, prefix: str, owner: int, yt_key: str,
+                 da_client_id: str, da_client_secret: str, da_username: str):
         self.token = token
         self.prefix = prefix
         self.owner = owner
         self.yt_key = yt_key
+        self.da_client_id = da_client_id
+        self.da_client_secret = da_client_secret
+        self.da_username = da_username
 
 
 class TrappingText:

@@ -72,4 +72,5 @@ if __name__ == "__main__":
     client.add_cog(Background(client))
     client.add_cog(Time(client))
     client.add_cog(Videos(client))
+    client.add_cog(Pictures(client))
     client.run(config.token)
