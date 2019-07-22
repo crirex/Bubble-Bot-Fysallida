@@ -11,7 +11,7 @@ from deviantart.deviation import Deviation
 from jsons import config
 
 albums = {
-    #"crirex": "61B9EF5B-7B0A-D912-E95F-17786A611E14",
+    "crirex": "61B9EF5B-7B0A-D912-E95F-17786A611E14",
     "autumn": "B2D7ED7B-8151-6354-CBB1-81CDD474CFB5"
 }
 
@@ -35,9 +35,7 @@ class Pictures(Cog):
         self.bot = bot
         self.da = deviantart.Api(config.da_client_id, config.da_client_secret)
         self.collections: Dict[str, List[Deviation]] = {}
-        self._load_albums()
 
-    # TODO load all URLs from collection
     def _collection(self, folder_id: str, username: str = "") -> List[Deviation]:
         results = []
         has_more = True
@@ -60,12 +58,16 @@ class Pictures(Cog):
                       pass_context=True)
     @commands.is_owner()
     async def albums(self, ctx: Context):
-        await self.load_albums()
+        async with ctx.channel.typing():
+            await self.load_albums()
         await ctx.send("Albums updated.")
 
     @commands.command(name='pic',
                       pass_context=True)
     async def send_picture(self, ctx: Context, key: Optional[str]):
+        if not self.collections:
+            await ctx.send("No pictures available.")
+            return
         if key is None:
             key = random.choice(list(albums.keys()))
         pic = random.choice(self.collections[key])
