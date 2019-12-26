@@ -1,8 +1,11 @@
 #!/usr/bin/python3.6
 # Work with Python 3.6
+import sys
+
 from discord import Game, Message
 from discord.ext import commands
 from discord.ext.commands import Bot
+from googleapiclient.errors import HttpError
 
 from globals import *
 from component import *
@@ -71,6 +74,9 @@ if __name__ == "__main__":
     client.add_cog(Voice(client))
     client.add_cog(Background(client))
     client.add_cog(Time(client))
-    client.add_cog(Videos(client))
+    try:
+        client.add_cog(Videos(client))
+    except HttpError:
+        print("Failed to load video commands.", file=sys.stderr)
     client.add_cog(Pictures(client))
     client.run(config.token)
